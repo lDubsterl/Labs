@@ -6,24 +6,27 @@ object Main {
 
   def generator(size: Int): Array[Float] = {
     var map: SortedMap[Int, List[Float]] = SortedMap.empty
-    var rand = Random()
-    //var seed = rand.nextLong()
-    //rand.setSeed(seed)
-    var sectionAmount: Int = size / rand.nextInt(size - 1) + 1
+    //var rand = Random()
+    var seed = Random.nextLong()
+    Random.setSeed(seed)
+    var sectionAmount: Int = size / (Random.nextInt(size - 1) + 1)
     //println(seed)
     var sectionSize: Float = 1f / sectionAmount
     var amountOfNumbersInSection: Int = size / sectionAmount
-    //print("Sections amount: " + sectionAmount + '\n' + "Section size: " + sectionSize + '\n')
+    println(seed)
+    print("Sections amount: " + sectionAmount + '\n' + "Section size: " + sectionSize + '\n')
     if (amountOfNumbersInSection * sectionAmount < size)
       {
         sectionAmount += 1
         sectionSize = 1f / sectionAmount
+        amountOfNumbersInSection = size / sectionAmount
       }
     var sections: Array[Int] = Array.fill(sectionAmount) {
       0
     }
-    for (i <- 0 until sectionAmount)
+    for (i <- 0 until sectionAmount) {
       map += i -> List()
+    }
     print("Sections amount: " + sectionAmount + '\n' + "Section size: " + sectionSize + '\n')
     print("Amount of numbers in section: " + amountOfNumbersInSection + '\n')
     var section: Int = 0
