@@ -1,4 +1,5 @@
 #include "packet.h"
+#include "qdebug.h"
 #include "qserialport.h"
 
 PacketSeq::PacketSeq(QString data)
@@ -81,10 +82,15 @@ void PacketSeq::stuffBytes()
 
 void PacketSeq::destuffBytes()
 {
-    if ((uchar)dataSeq[0] == Packet::flag)
-        dataSeq = dataSeq.remove(0, 3);
-    for (int i = 0; i < dataSeq.size(); i++)
+    dataSeq = dataSeq.remove(0, 3);
+    for (int i = 0; i < dataSeq.size() - 1; i++)
     {
+        if ((dataSeq[i] != '*' && (uchar)dataSeq[i + 1] == Packet::flag))
+        {
+            dataSeq = dataSeq.remove(i + 1, 3);
+            i--;
+            continue;
+        }
         if ((uchar)dataSeq[i] == '*' && dataSeq[i + 1] == Packet::flag)
         {
             dataSeq = dataSeq.remove(i, 1);
@@ -94,7 +100,6 @@ void PacketSeq::destuffBytes()
         if (dataSeq[i] == '*' && dataSeq[i + 1] == '*')
         {
             dataSeq = dataSeq.remove(i, 1);
-            i--;
         }
     }
     rawData = QString::fromLocal8Bit(dataSeq);
@@ -102,11 +107,9 @@ void PacketSeq::destuffBytes()
 
 QByteArray PacketSeq::getStuffedData()
 {
-    stuffBytes();
     return dataSeq;
 }
 QString PacketSeq::getDestuffedData()
 {
-    destuffBytes();
     return rawData;
 }

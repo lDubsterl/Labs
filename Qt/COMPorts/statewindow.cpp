@@ -10,6 +10,7 @@ StateWindow::StateWindow(QWidget *parent) :
 
 StateWindow::~StateWindow()
 {
+    this->close();
     delete ui;
 }
 

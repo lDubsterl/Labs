@@ -24,7 +24,7 @@ public:
 
 private slots:
 
-    void on_lineEdit_returnPressed();
+    void on_inputLine_returnPressed();
 
 signals:
     void dataSent();

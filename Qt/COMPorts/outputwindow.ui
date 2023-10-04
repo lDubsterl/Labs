@@ -28,9 +28,15 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="lineEdit">
+    <widget class="QLineEdit" name="stuffedSequence">
+     <property name="text">
+      <string/>
+     </property>
      <property name="readOnly">
       <bool>true</bool>
+     </property>
+     <property name="placeholderText">
+      <string>Закодированная последовательность</string>
      </property>
     </widget>
    </item>
@@ -61,7 +67,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="inputLine"/>
+    <widget class="QLineEdit" name="inputLine">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>Введите сюда текст для отправки</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

@@ -1,7 +1,6 @@
 #include "inputwindow.h"
 #include "outputwindow.h"
 #include "packet.h"
-#include "qtextcodec.h"
 #include "ui_inputwindow.h"
 
 QSerialPort* inputPort1;
@@ -17,7 +16,9 @@ InputWindow::InputWindow(QWidget *parent) :
 
 InputWindow::~InputWindow()
 {
+    this->close();
     inputPort1->close();
+    outputPort1->close();
     delete ui;
 }
 
@@ -34,27 +35,31 @@ void InputWindow::receivePorts(QSerialPort *port1, QSerialPort *port2)
 }
 
 
-void InputWindow::on_lineEdit_returnPressed()
+void InputWindow::on_inputLine_returnPressed()
 {
-    ui->textEdit->append(ui->lineEdit->text());
-    unsentText1.append(ui->lineEdit->text());
-    ui->lineEdit->clear();
+    ui->textEdit->append(ui->inputLine->text());
+    unsentText1.append(ui->inputLine->text());
+    ui->inputLine->clear();
     PacketSeq data(unsentText1);
     data.divideToPackets(*inputPort1);
+    data.stuffBytes();
     qDebug() << QString::fromLocal8Bit(data.getStuffedData());
-    qDebug() << data.getDestuffedData();
     inputPort1->write(data.getStuffedData());
     unsentText1 = "";
     inputPort1->waitForBytesWritten();
     if (outputWindow->isVisible())
         emit dataSent();
+    else
+        unsentText1.append('\n');
 }
 
 void InputWindow::dataRecieved()
 {
     outputPort1->waitForReadyRead();
     auto s = outputPort1->readAll();
-    emit bytesWritten(s.size());
-    QTextCodec *tc = QTextCodec::codecForName("Windows-1251");
-    ui->outputWindow->append(tc->toUnicode(s));
+    PacketSeq data(s);
+    ui->stuffedSequence->setText(QString::fromLocal8Bit(data.getStuffedData()));
+    data.destuffBytes();
+    emit bytesWritten(data.getDestuffedData().size());
+    ui->outputWindow->append(data.getDestuffedData());
 }

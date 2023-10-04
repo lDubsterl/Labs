@@ -21,7 +21,14 @@
     <widget class="QTextEdit" name="textEdit"/>
    </item>
    <item>
-    <widget class="QLineEdit" name="lineEdit"/>
+    <widget class="QLineEdit" name="inputLine">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>Введите сюда текст для отправки</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="Line" name="line">
@@ -50,9 +57,15 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="frameState">
+    <widget class="QLineEdit" name="stuffedSequence">
+     <property name="text">
+      <string/>
+     </property>
      <property name="readOnly">
       <bool>true</bool>
+     </property>
+     <property name="placeholderText">
+      <string>Закодированная последовательность</string>
      </property>
     </widget>
    </item>

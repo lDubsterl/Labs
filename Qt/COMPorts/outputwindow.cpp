@@ -16,6 +16,9 @@ OutputWindow::OutputWindow(QWidget *parent) :
 
 OutputWindow::~OutputWindow()
 {
+    this->close();
+    inputPort2->close();
+    outputPort2->close();
     delete ui;
 }
 
@@ -34,6 +37,8 @@ void OutputWindow::dataRecieved()
     outputPort2->waitForReadyRead();
     auto s = outputPort2->readAll();
     PacketSeq data(s);
+    ui->stuffedSequence->setText(QString::fromLocal8Bit(data.getStuffedData()));
+    data.destuffBytes();
     emit bytesWritten(data.getDestuffedData().size());
     ui->textEdit->append(data.getDestuffedData());
 }
@@ -41,10 +46,13 @@ void OutputWindow::dataRecieved()
 void OutputWindow::on_inputLine_returnPressed()
 {
     ui->inputWindow->append(ui->inputLine->text());
-    unsentText2.append(ui->inputLine->text() + "\n");
+    unsentText2.append(ui->inputLine->text());
     ui->inputLine->clear();
-
-    inputPort2->write(unsentText2.toLocal8Bit());
+    PacketSeq data(unsentText2);
+    data.divideToPackets(*inputPort2);
+    data.stuffBytes();
+    qDebug() << QString::fromLocal8Bit(data.getStuffedData());
+    inputPort2->write(data.getStuffedData());
     unsentText2 = "";
     inputPort2->waitForBytesWritten();
     if (inputWindow->isVisible())

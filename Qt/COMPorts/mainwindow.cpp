@@ -17,19 +17,22 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    in->~InputWindow();
+    out->~OutputWindow();
+    state->~StateWindow();
     delete ui;
 }
 
 void MainWindow::setPorts()
 {
-   COM11.setPortName("COM3");
-   COM12.setPortName("COM6");
-   COM21.setPortName("COM5");
-   COM22.setPortName("COM4");
-   COM11.open(QSerialPort::WriteOnly);
-   COM21.open(QSerialPort::WriteOnly);
-   COM12.open(QSerialPort::ReadOnly);
-   COM22.open(QSerialPort::ReadOnly);
+    COM11.setPortName("COM3");
+    COM12.setPortName("COM6");
+    COM21.setPortName("COM5");
+    COM22.setPortName("COM4");
+    COM11.open(QSerialPort::WriteOnly);
+    COM21.open(QSerialPort::WriteOnly);
+    COM12.open(QSerialPort::ReadOnly);
+    COM22.open(QSerialPort::ReadOnly);
 }
 
 void MainWindow::on_input_clicked()

@@ -9,9 +9,9 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     MainWindow w;
-    w.in = new InputWindow;
-    w.out = new OutputWindow;
-    w.state = new StateWindow;
+    w.in = new InputWindow(&w);
+    w.out = new OutputWindow(&w);
+    w.state = new StateWindow(&w);
     w.out->stateWindow = w.state;
     w.in->stateWindow = w.state;
     w.in->outputWindow = w.out;
