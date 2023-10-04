@@ -1,31 +1,17 @@
 #include "packet.h"
 #include "qserialport.h"
 
-PacketSeq::PacketSeq()
-{
-
-}
-
 PacketSeq::PacketSeq(QString data)
 {
-    for (int i = 0; i < data.size(); i++)
-    {
-        if (data[i].cell() == Packet::flag)
-        {
-            data.insert(i - 1, '*');
-            i++;
-            continue;
-        }
-        if (data[i].cell() == '*')
-        {
-            data.insert(i - 1, '*');
-            i++;
-        }
-    }
     rawData = data;
 }
 
-uchar PacketSeq::Packet::flag = 'z' + 29;
+PacketSeq::PacketSeq(QByteArray packetSeq)
+{
+    dataSeq = packetSeq;
+}
+
+uchar PacketSeq::Packet::flag = 'z';
 
 PacketSeq::Packet::Packet(QSerialPort &port)
 {
@@ -35,7 +21,11 @@ PacketSeq::Packet::Packet(QSerialPort &port)
 QByteArray PacketSeq::Packet::convertToByteArray()
 {
     QByteArray arr;
-    arr.append(flag + destinationAddress + sourceAddress + data + fcs);
+    arr.append(flag);
+    arr.append(destinationAddress);
+    arr.append(sourceAddress);
+    arr.append(data);
+    arr.append(fcs);
     return arr;
 }
 
@@ -53,18 +43,70 @@ void PacketSeq::divideToPackets(QSerialPort &port)
         else
         {
             packet.data = rawData.toLocal8Bit();
+            while (packet.data.size() < 29)
+                packet.data.append('\0');
             rawData = rawData.remove(0, rawData.size());
             dataSeq.append(packet.convertToByteArray());
         }
     }
 }
 
-QByteArray PacketSeq::getPacketSequence()
+void PacketSeq::stuffBytes()
 {
-    return dataSeq;
+    int j, size = 33;
+    for (int i = 0; i < dataSeq.size(); i++)
+    {
+        if (dataSeq[i] == Packet::flag)
+        {
+            for (j = i + 1; j < i + size; j++)
+            {
+                if (dataSeq[j] == Packet::flag)
+                {
+                    dataSeq = dataSeq.insert(j, '*');
+                    j++;
+                    size--;
+                    continue;
+                }
+                if (dataSeq[j] == '*')
+                {
+                    dataSeq = dataSeq.insert(j, '*');
+                    j++;
+                    size--;
+                }
+            }
+            i = j;
+        }
+    }
 }
 
-void PacketSeq::destaff()
+void PacketSeq::destuffBytes()
 {
+    if ((uchar)dataSeq[0] == Packet::flag)
+        dataSeq = dataSeq.remove(0, 3);
+    for (int i = 0; i < dataSeq.size(); i++)
+    {
+        if ((uchar)dataSeq[i] == '*' && dataSeq[i + 1] == Packet::flag)
+        {
+            dataSeq = dataSeq.remove(i, 1);
+            i--;
+            continue;
+        }
+        if (dataSeq[i] == '*' && dataSeq[i + 1] == '*')
+        {
+            dataSeq = dataSeq.remove(i, 1);
+            i--;
+        }
+    }
+    rawData = QString::fromLocal8Bit(dataSeq);
+}
 
+QByteArray PacketSeq::getStuffedData()
+{
+    stuffBytes();
+    return dataSeq;
+}
+QString PacketSeq::getDestuffedData()
+{
+    destuffBytes();
+    return rawData;
 }

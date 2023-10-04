@@ -49,6 +49,13 @@
      </property>
     </widget>
    </item>
+   <item>
+    <widget class="QLineEdit" name="frameState">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>

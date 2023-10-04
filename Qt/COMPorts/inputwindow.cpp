@@ -40,8 +40,10 @@ void InputWindow::on_lineEdit_returnPressed()
     unsentText1.append(ui->lineEdit->text());
     ui->lineEdit->clear();
     PacketSeq data(unsentText1);
-    data.divideToPackets();
-    inputPort1->write(data.getPacketSequence());
+    data.divideToPackets(*inputPort1);
+    qDebug() << QString::fromLocal8Bit(data.getStuffedData());
+    qDebug() << data.getDestuffedData();
+    inputPort1->write(data.getStuffedData());
     unsentText1 = "";
     inputPort1->waitForBytesWritten();
     if (outputWindow->isVisible())

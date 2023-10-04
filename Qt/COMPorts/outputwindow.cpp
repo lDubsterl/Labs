@@ -1,5 +1,6 @@
 #include "outputwindow.h"
 #include "inputwindow.h"
+#include "packet.h"
 #include "ui_outputwindow.h"
 #include <QTextCodec>
 
@@ -32,9 +33,9 @@ void OutputWindow::dataRecieved()
 {
     outputPort2->waitForReadyRead();
     auto s = outputPort2->readAll();
-    emit bytesWritten(s.size());
-    QTextCodec *tc = QTextCodec::codecForName("Windows-1251");
-    ui->textEdit->append(tc->toUnicode(s));
+    PacketSeq data(s);
+    emit bytesWritten(data.getDestuffedData().size());
+    ui->textEdit->append(data.getDestuffedData());
 }
 
 void OutputWindow::on_inputLine_returnPressed()

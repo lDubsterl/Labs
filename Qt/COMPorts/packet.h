@@ -7,19 +7,21 @@
 class PacketSeq
 {
 public:
-    PacketSeq();
 
     PacketSeq(QString data);
 
+    PacketSeq(QByteArray packetSeq);
+
     void divideToPackets(QSerialPort &port);
 
-    QByteArray getPacketSequence();
+    void stuffBytes();
 
-    void destaff();
+    void destuffBytes();
 
+    QByteArray getStuffedData();
+
+    QString getDestuffedData();
 private:
-
-    void makePacket();
 
     QString rawData;
 
