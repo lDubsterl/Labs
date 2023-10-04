@@ -14,12 +14,14 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     outputwindow.cpp \
+    packet.cpp \
     statewindow.cpp
 
 HEADERS += \
     inputwindow.h \
     mainwindow.h \
     outputwindow.h \
+    packet.h \
     statewindow.h
 
 FORMS += \

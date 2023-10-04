@@ -1,5 +1,6 @@
 #include "inputwindow.h"
 #include "outputwindow.h"
+#include "packet.h"
 #include "qtextcodec.h"
 #include "ui_inputwindow.h"
 
@@ -36,9 +37,11 @@ void InputWindow::receivePorts(QSerialPort *port1, QSerialPort *port2)
 void InputWindow::on_lineEdit_returnPressed()
 {
     ui->textEdit->append(ui->lineEdit->text());
-    unsentText1.append(ui->lineEdit->text() + "\n");
+    unsentText1.append(ui->lineEdit->text());
     ui->lineEdit->clear();
-    inputPort1->write(unsentText1.toLocal8Bit());
+    PacketSeq data(unsentText1);
+    data.divideToPackets();
+    inputPort1->write(data.getPacketSequence());
     unsentText1 = "";
     inputPort1->waitForBytesWritten();
     if (outputWindow->isVisible())
