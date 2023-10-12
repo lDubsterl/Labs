@@ -63,7 +63,7 @@ object Main5 {
 object Main6 {
   def main(args: Array[String]): Unit = {
     val str = "Hello to everybody"
-    var regex = ".(.)?".r
+    var regex = "(.).".r
     println(regex.replaceAllIn(str, "$1"))
   }
 }
