@@ -1,5 +1,4 @@
 #include "packet.h"
-#include "qdebug.h"
 #include "qserialport.h"
 
 PacketSeq::PacketSeq(QString data)
@@ -12,7 +11,7 @@ PacketSeq::PacketSeq(QByteArray packetSeq)
     dataSeq = packetSeq;
 }
 
-uchar PacketSeq::Packet::flag = 'z';
+uchar PacketSeq::Packet::flag = 'z' + 29;
 
 PacketSeq::Packet::Packet(QSerialPort &port)
 {
@@ -57,18 +56,18 @@ void PacketSeq::stuffBytes()
     int j, size = 33;
     for (int i = 0; i < dataSeq.size(); i++)
     {
-        if (dataSeq[i] == Packet::flag)
+        if ((uchar)dataSeq[i] == Packet::flag)
         {
             for (j = i + 1; j < i + size; j++)
             {
-                if (dataSeq[j] == Packet::flag)
+                if ((uchar)dataSeq[j] == Packet::flag)
                 {
                     dataSeq = dataSeq.insert(j, '*');
                     j++;
                     size--;
                     continue;
                 }
-                if (dataSeq[j] == '*')
+                if ((uchar)dataSeq[j] == '*')
                 {
                     dataSeq = dataSeq.insert(j, '*');
                     j++;
@@ -85,19 +84,19 @@ void PacketSeq::destuffBytes()
     dataSeq = dataSeq.remove(0, 3);
     for (int i = 0; i < dataSeq.size() - 1; i++)
     {
-        if ((dataSeq[i] != '*' && (uchar)dataSeq[i + 1] == Packet::flag))
+        if (((uchar)dataSeq[i] != '*' && (uchar)dataSeq[i + 1] == Packet::flag))
         {
             dataSeq = dataSeq.remove(i + 1, 3);
             i--;
             continue;
         }
-        if ((uchar)dataSeq[i] == '*' && dataSeq[i + 1] == Packet::flag)
+        if ((uchar)dataSeq[i] == '*' && (uchar)dataSeq[i + 1] == Packet::flag)
         {
             dataSeq = dataSeq.remove(i, 1);
             i--;
             continue;
         }
-        if (dataSeq[i] == '*' && dataSeq[i + 1] == '*')
+        if ((uchar)dataSeq[i] == '*' && (uchar)dataSeq[i + 1] == '*')
         {
             dataSeq = dataSeq.remove(i, 1);
         }

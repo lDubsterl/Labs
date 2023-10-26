@@ -39,7 +39,7 @@ void OutputWindow::dataRecieved()
     PacketSeq data(s);
     ui->stuffedSequence->setText(QString::fromLocal8Bit(data.getStuffedData()));
     data.destuffBytes();
-    emit bytesWritten(data.getDestuffedData().size());
+    emit bytesWritten(s.size());
     ui->textEdit->append(data.getDestuffedData());
 }
 
