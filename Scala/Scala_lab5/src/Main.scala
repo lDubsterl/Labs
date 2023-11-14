@@ -101,7 +101,7 @@ object ButtonModule {
                 }
               }
               if (prod_name.isBlank && !priceField.getText.isBlank && amountField.getText.isBlank) {
-                rs = stmt.executeQuery("SELECT ALL product, price, amount FROM podval WHERE price > " + priceField.getText + " GROUP BY price, product")
+                rs = stmt.executeQuery("select * from podval where price >= ALL(select price from podval)")
                 infoField.setText("product\tprice\tamount\n")
                 while (rs.next()) {
                   val name = rs.getString("product")
@@ -111,18 +111,15 @@ object ButtonModule {
                 }
               }
               if (prod_name.isBlank && priceField.getText.isBlank && amountField.getText.isBlank) {
-                var maxPrice = 0
-                rs = stmt.executeQuery("SELECT ALL product, price, amount FROM podval")
+                rs = stmt.executeQuery("SELECT product, max(price) as price, max(amount) as amount  FROM podval  GROUP BY  product")
                 while (rs.next()) {
                   val name = rs.getString("product")
                   val price = rs.getString("price")
                   val amount = rs.getString("amount")
-                  if (Integer.parseInt(price) * Integer.parseInt(amount) > maxPrice) {
-                    maxPrice = Integer.parseInt(price) * Integer.parseInt(amount)
                     nameField.setText(name)
                     priceField.setText(price)
                     amountField.setText(amount)
-                  }
+
                 }
               }
             }
@@ -146,7 +143,7 @@ object ButtonModule {
             val stmt = conn.createStatement()
             val prod_name = nameField.getText().trim()
             var rs: java.sql.ResultSet = null
-            rs = stmt.executeQuery("SELECT product, price, amount FROM podval2 where product = '" + prod_name + "'" + "group by product, id")
+            rs = stmt.executeQuery("SELECT product, AVG(price) as price, SUM(amount) as amount FROM podval2 group by product")
             infoField.setText("product\tprice\tamount\n")
             while (rs.next()) {
               val name = rs.getString("product")
