@@ -1,5 +1,4 @@
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException
-
 import java.awt.event.{ActionEvent, ActionListener}
 import javax.swing.{JButton, JFrame, JLabel, JPanel, JTextArea, JTextField, SwingUtilities}
 import java.awt.Dimension
@@ -10,7 +9,7 @@ object ButtonModule {
   val frame = new JFrame("My Application")
   frame.setSize(800, 600)
   frame.setLayout(null)
-  frame.getContentPane().setBackground(Color.CYAN)
+  //frame.getContentPane().setBackground(Color.CYAN)
   frame.setLocationRelativeTo(null)
   frame.setVisible(true)
 
