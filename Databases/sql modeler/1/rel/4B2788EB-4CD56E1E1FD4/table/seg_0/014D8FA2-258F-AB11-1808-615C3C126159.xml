@@ -1,0 +1,55 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="014D8FA2-258F-AB11-1808-615C3C126159" name="Клиент">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>DD5BBCBC-4AC1-0B8C-0A6A-1EFD5E63E4AB</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="Номер_паспорта" id="B676F12E-A949-E5CD-4035-C1681DBBA960">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>AD9A21AB-A49B-7E60-81B5-2E67FA0B96B4</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="ФИО" id="89B36785-4862-4B17-07FF-3EC148124EFD">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>0245BEF3-363F-56FC-5B7C-45B5B3581B7A</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="Время_стоянки" id="8A578E9A-761C-46F4-9538-3C63CD1B4C64">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>34A24DD6-CF3D-CB2A-9D1A-D2A90EAA966C</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="B0CCFC08-0FF4-43A7-BE86-4DC6529173D2" name="Клиент_PK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>DFF5EDCC-896D-3647-9F65-975755476351</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="B676F12E-A949-E5CD-4035-C1681DBBA960"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

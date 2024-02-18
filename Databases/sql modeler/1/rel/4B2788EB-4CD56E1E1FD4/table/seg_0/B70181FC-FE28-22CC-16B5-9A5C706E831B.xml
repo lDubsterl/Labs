@@ -1,0 +1,75 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="B70181FC-FE28-22CC-16B5-9A5C706E831B" name="Лифт">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>CC777948-13DA-38DD-87BA-8DFD1A3162E7</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="Номер" id="90C5297A-E3D9-67CE-B462-8C03C98FF454">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>1038E9F4-EAE9-5078-B7E0-229BF75D5FA6</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="Длина" id="4E5956AB-BF5F-AB87-26C2-75421934FA92">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>78BFD3C4-3456-493E-F069-505F9CD01790</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="Ширина" id="870FEE60-574A-1FA4-3F28-7ED81206A712">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>B30BD39A-060A-0672-338D-4051624A15ED</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="Высота" id="07356DCD-E526-48E6-A775-97C44A281E0E">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>5611F43C-F693-7647-7B3A-DC1B2AB439F7</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="Грузоподъемность" id="EC0A74AE-3CE5-58B9-7410-0B65B6FC60B8">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>FBF7AD1D-9ED4-5BBE-DE6B-F68E5DECE9BB</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="65AD1888-0438-484C-A570-F087799C3B9E" name="Лифт_PK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>A58A3668-3C02-2FB3-FFF7-3BFCBC9F76C4</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="90C5297A-E3D9-67CE-B462-8C03C98FF454"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

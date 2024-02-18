@@ -1,0 +1,55 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="655AD767-A016-38B2-5FCE-4090D4173163" name="Этаж">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>AC4494F0-1857-BAC6-D931-1392F51BDF15</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="Номер" id="04E53F3F-692B-3083-DDD7-F2827203E742">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>D1F293AB-E586-2257-64DA-BB319F70C9AE</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="Кол-во_мест" id="486366DA-48B1-72AE-111F-4BAF5BCA4A62">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>950DA870-DC65-77E6-1437-C080FDFEC6D8</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="Высота" id="50170957-6566-185E-2C18-F2502899B431">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>B768D892-34FC-EF03-F729-B4C95F94BAE7</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="66A27138-63C3-F9C3-FE8D-A741F4DF7719" name="Этаж_PK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>13A5D660-58DF-0489-893D-467B4E15A9C5</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="04E53F3F-692B-3083-DDD7-F2827203E742"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

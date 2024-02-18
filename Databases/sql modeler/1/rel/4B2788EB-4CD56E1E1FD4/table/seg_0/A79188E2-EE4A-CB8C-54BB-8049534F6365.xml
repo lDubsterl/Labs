@@ -1,0 +1,71 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="A79188E2-EE4A-CB8C-54BB-8049534F6365" name="4">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="Этаж_Номер" id="18F4A662-E2C4-9CAC-90EE-1F7151DD269C">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="D1D9E43A-1D54-F0E4-3BB2-4EB06BF66018" referredColumn="04E53F3F-692B-3083-DDD7-F2827203E742"/>
+</associations>
+</Column>
+<Column name="Лифт_Номер" id="685097D0-30BA-EE41-A234-F83BFC2BE7D6">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="01C9E1CB-D250-EC73-3E50-3837FC6D1720" referredColumn="90C5297A-E3D9-67CE-B462-8C03C98FF454"/>
+</associations>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="B82462B3-1D32-23EA-A7EF-DD5805CC7585" name="4_PK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="18F4A662-E2C4-9CAC-90EE-1F7151DD269C"/>
+<colUsage columnID="685097D0-30BA-EE41-A234-F83BFC2BE7D6"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="DE56151C-48D3-06CB-86EE-4A89D8321FFB" name="4_Этаж_FK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>590E32D3-8820-C3D0-72A9-8B2A198AF64A</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="18F4A662-E2C4-9CAC-90EE-1F7151DD269C"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="A7C86CFE-A454-642E-42A7-EC9B67B7825C" name="4_Лифт_FK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>590E32D3-8820-C3D0-72A9-8B2A198AF64A</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="685097D0-30BA-EE41-A234-F83BFC2BE7D6"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

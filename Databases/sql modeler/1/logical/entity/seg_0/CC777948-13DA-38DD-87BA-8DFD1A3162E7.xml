@@ -1,0 +1,87 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Entity class="oracle.dbtools.crest.model.design.logical.Entity" directorySegmentName="seg_0" id="CC777948-13DA-38DD-87BA-8DFD1A3162E7" name="Лифт">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:53:54 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<adequatelyNormalized>NO</adequatelyNormalized>
+<expectedVolumes>0</expectedVolumes>
+<fwdEngineeringStrategyName>Single Table</fwdEngineeringStrategyName>
+<growthPercent>0</growthPercent>
+<growthType>Year</growthType>
+<maxVolumes>9999999</maxVolumes>
+<minVolumes>0</minVolumes>
+<normalForm>Third</normalForm>
+<attributes itemClass="oracle.dbtools.crest.model.design.logical.Attribute">
+<Attribute name="Номер" id="1038E9F4-EAE9-5078-B7E0-229BF75D5FA6">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:57:08 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="Длина" id="78BFD3C4-3456-493E-F069-505F9CD01790">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:57:09 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="Ширина" id="B30BD39A-060A-0672-338D-4051624A15ED">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:57:09 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="Высота" id="5611F43C-F693-7647-7B3A-DC1B2AB439F7">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:57:09 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="Грузоподъемность" id="FBF7AD1D-9ED4-5BBE-DE6B-F68E5DECE9BB">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:57:10 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+</attributes>
+<identifiers itemClass="oracle.dbtools.crest.model.design.logical.CandidateKey">
+<identifier id="A58A3668-3C02-2FB3-FFF7-3BFCBC9F76C4" name="Лифт PK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:57:14 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<pk>true</pk>
+<usedAttributes>
+<attributeRef>1038E9F4-EAE9-5078-B7E0-229BF75D5FA6</attributeRef>
+</usedAttributes>
+</identifier>
+</identifiers>
+</Entity>

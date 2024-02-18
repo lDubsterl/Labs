@@ -1,0 +1,17 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" directorySegmentName="seg_0" id="D1D9E43A-1D54-F0E4-3BB2-4EB06BF66018" containerWithKeyObject="A79188E2-EE4A-CB8C-54BB-8049534F6365" localFKIndex="DE56151C-48D3-06CB-86EE-4A89D8321FFB" name="4_Этаж_FK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>590E32D3-8820-C3D0-72A9-8B2A198AF64A</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<referredTableLongName>Этаж</referredTableLongName>
+<deleteRule>NO ACTION</deleteRule>
+<referredTableID>655AD767-A016-38B2-5FCE-4090D4173163</referredTableID>
+<keyObject>66A27138-63C3-F9C3-FE8D-A741F4DF7719</keyObject>
+<referredKeyID>66A27138-63C3-F9C3-FE8D-A741F4DF7719</referredKeyID>
+<mandatory>true</mandatory>
+<refColNames>Номер</refColNames>
+<transferable>true</transferable>
+<rely>false</rely>
+<columnDependencyConstraintGenerateInDDL>true</columnDependencyConstraintGenerateInDDL>
+</FKIndexAssociation>

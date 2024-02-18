@@ -1,0 +1,17 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" directorySegmentName="seg_0" id="F0EF034D-998A-5BC2-9370-5CFCC5834E3B" containerWithKeyObject="7318FFF3-6333-350D-43D4-17EA6EE51487" localFKIndex="2985ADF4-7705-8690-C524-6E79E394A3BD" name="Место_Авто_FK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>B53E8B5F-F082-E855-2A2B-DCFF88080765</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<referredTableLongName>Авто</referredTableLongName>
+<deleteRule>NO ACTION</deleteRule>
+<referredTableID>0EC0EBD5-BCE5-9716-2B17-D555B9DD91E9</referredTableID>
+<keyObject>A14F4656-741E-2033-A7EF-98C865DB79CB</keyObject>
+<referredKeyID>A14F4656-741E-2033-A7EF-98C865DB79CB</referredKeyID>
+<mandatory>true</mandatory>
+<refColNames>Номер</refColNames>
+<transferable>true</transferable>
+<rely>false</rely>
+<columnDependencyConstraintGenerateInDDL>true</columnDependencyConstraintGenerateInDDL>
+</FKIndexAssociation>

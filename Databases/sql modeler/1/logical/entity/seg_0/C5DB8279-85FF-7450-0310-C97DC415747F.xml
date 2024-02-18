@@ -1,0 +1,100 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Entity class="oracle.dbtools.crest.model.design.logical.Entity" directorySegmentName="seg_0" id="C5DB8279-85FF-7450-0310-C97DC415747F" name="Место">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:53:49 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<adequatelyNormalized>NO</adequatelyNormalized>
+<expectedVolumes>0</expectedVolumes>
+<fwdEngineeringStrategyName>Single Table</fwdEngineeringStrategyName>
+<growthPercent>0</growthPercent>
+<growthType>Year</growthType>
+<maxVolumes>9999999</maxVolumes>
+<minVolumes>0</minVolumes>
+<normalForm>Third</normalForm>
+<attributes itemClass="oracle.dbtools.crest.model.design.logical.Attribute">
+<Attribute name="Номер" id="245287C8-2ED0-E524-E5EC-D6151A8575C8">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:56:13 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="Занятость" id="A7044FAA-8BA6-0528-9B0B-92A47DFB068E">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:56:13 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="Длина" id="527D2524-3B40-1E41-AD27-407B1A7878A9">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:56:13 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="Ширина" id="1B5B86CD-BC50-6112-8C52-AA53E42B1D36">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:56:14 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="Номер1" id="E2D78773-8D64-009C-6199-DC92D1E4EF9A">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:37:11 UTC</createdTime>
+<generatorID>AF0BA9E2-B974-A835-A170-A4371225D92B</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<referedAttribute>D1F293AB-E586-2257-64DA-BB319F70C9AE</referedAttribute>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+<Attribute name="Номер2" id="40A98A3B-23E6-3932-EFE7-905252A8566D">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:05 UTC</createdTime>
+<generatorID>B53E8B5F-F082-E855-2A2B-DCFF88080765</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<referedAttribute>9F342990-162F-92BA-276A-3E5505734899</referedAttribute>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+</Attribute>
+</attributes>
+<identifiers itemClass="oracle.dbtools.crest.model.design.logical.CandidateKey">
+<identifier id="9AF866CF-6239-F322-8FAF-7BA6D73579F0" name="Место PK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:56:15 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<pk>true</pk>
+<usedAttributes>
+<attributeRef>245287C8-2ED0-E524-E5EC-D6151A8575C8</attributeRef>
+</usedAttributes>
+</identifier>
+</identifiers>
+</Entity>

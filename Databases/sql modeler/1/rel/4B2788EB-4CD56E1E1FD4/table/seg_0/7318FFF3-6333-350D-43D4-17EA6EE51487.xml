@@ -1,0 +1,113 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="7318FFF3-6333-350D-43D4-17EA6EE51487" name="Место">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>C5DB8279-85FF-7450-0310-C97DC415747F</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="Номер" id="B4DA75A0-CB0B-E75E-EAC0-2A012E8BF097">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>245287C8-2ED0-E524-E5EC-D6151A8575C8</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="Занятость" id="8613EFBB-3426-198B-A260-53E5DEBEFFF0">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>A7044FAA-8BA6-0528-9B0B-92A47DFB068E</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="Длина" id="C407D592-F164-E5AC-2DA0-37E4533A5476">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>527D2524-3B40-1E41-AD27-407B1A7878A9</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="Ширина" id="7D7E8B28-884F-46FF-686F-00024216AB25">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>1B5B86CD-BC50-6112-8C52-AA53E42B1D36</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="Этаж_Номер" id="EE5A479B-1C3E-CF9C-E8A1-2491DB1CD15D">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>E2D78773-8D64-009C-6199-DC92D1E4EF9A</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="94DD5FED-66D7-D35E-89D8-773CA80C86C7" referredColumn="04E53F3F-692B-3083-DDD7-F2827203E742"/>
+</associations>
+</Column>
+<Column name="Авто_Номер" id="E6F62219-70A8-8195-B2C1-E9ADCCF46883">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>40A98A3B-23E6-3932-EFE7-905252A8566D</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<use>0</use>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="F0EF034D-998A-5BC2-9370-5CFCC5834E3B" referredColumn="6A07A3A9-CBE7-C25B-250D-263D67BE73E6"/>
+</associations>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="BACCC489-E178-17E0-8FEB-328CB903F1A2" name="Место_PK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>9AF866CF-6239-F322-8FAF-7BA6D73579F0</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="B4DA75A0-CB0B-E75E-EAC0-2A012E8BF097"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="2985ADF4-7705-8690-C524-6E79E394A3BD" name="Место_Авто_FK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>B53E8B5F-F082-E855-2A2B-DCFF88080765</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="E6F62219-70A8-8195-B2C1-E9ADCCF46883"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="FD314DD2-0909-54CF-843C-EF63AF7D7E75" name="Место_Этаж_FK">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 22:52:12 UTC</createdTime>
+<generatorID>AF0BA9E2-B974-A835-A170-A4371225D92B</generatorID>
+<ownerDesignName>1</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="EE5A479B-1C3E-CF9C-E8A1-2491DB1CD15D"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

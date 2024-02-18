@@ -1,0 +1,20 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Relation class="oracle.dbtools.crest.model.design.logical.Relation" name="1" directorySegmentName="seg_0" id="DC1A59BB-D47F-5B08-142A-938294D82C20">
+<createdBy>Dubster</createdBy>
+<createdTime>2024-02-18 21:58:30 UTC</createdTime>
+<ownerDesignName>1</ownerDesignName>
+<engineerTo>
+<item key="4B2788EB-0541-96E6-543F-4CD56E1E1FD4" value="true"/>
+</engineerTo>
+<sourcePk>DFF5EDCC-896D-3647-9F65-975755476351</sourcePk>
+<targetPk>4BB5CF33-7F87-6557-7B83-3057D546D122</targetPk>
+<identifying>false</identifying>
+<optionalSource>true</optionalSource>
+<optionalTarget>false</optionalTarget>
+<sourceCardinality>1</sourceCardinality>
+<sourceEntity>DD5BBCBC-4AC1-0B8C-0A6A-1EFD5E63E4AB</sourceEntity>
+<targetCardinalityString>*</targetCardinalityString>
+<targetEntity>CDF157F4-5A38-E2E0-5182-CE84D09FECF7</targetEntity>
+<transferable>true</transferable>
+<deleteRule>NO ACTION</deleteRule>
+</Relation>
