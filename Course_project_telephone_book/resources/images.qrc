@@ -1,0 +1,10 @@
+<RCC>
+    <qresource lang="Russian" prefix="/images">
+        <file>down.png</file>
+        <file>up.png</file>
+        <file>plus.png</file>
+        <file>show.png</file>
+        <file>edit.png</file>
+        <file>sprav.png</file>
+    </qresource>
+</RCC>
