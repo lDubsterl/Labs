@@ -1,8 +1,9 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
-<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="A45BF64B-D2CF-73AE-0F8E-5702F7CA2D21" name="6">
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="A45BF64B-D2CF-73AE-0F8E-5702F7CA2D21" name="Клиент_Табло">
 <createdBy>Dubster</createdBy>
 <createdTime>2024-02-18 22:52:12 UTC</createdTime>
 <ownerDesignName>1</ownerDesignName>
+<ordsAlias>client_table</ordsAlias>
 <allowColumnReorder>false</allowColumnReorder>
 <existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
 <parsed>true</parsed>

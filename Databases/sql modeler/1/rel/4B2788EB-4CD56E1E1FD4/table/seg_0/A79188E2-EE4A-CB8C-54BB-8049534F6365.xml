@@ -1,8 +1,9 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
-<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="A79188E2-EE4A-CB8C-54BB-8049534F6365" name="4">
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="A79188E2-EE4A-CB8C-54BB-8049534F6365" name="Этаж_Лифт">
 <createdBy>Dubster</createdBy>
 <createdTime>2024-02-18 22:52:12 UTC</createdTime>
 <ownerDesignName>1</ownerDesignName>
+<ordsAlias>floor_elevator</ordsAlias>
 <allowColumnReorder>false</allowColumnReorder>
 <existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
 <parsed>true</parsed>
