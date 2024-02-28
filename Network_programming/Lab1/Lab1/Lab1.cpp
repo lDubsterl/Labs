@@ -93,7 +93,7 @@ int downloadFileToClient(SOCKET& socket, char* recvBuffer, size_t offset)
 				recievedData = recv(socket, filePart, SEGMENT_SIZE, 0);
 				send(socket, "!", 2, 0);
 				currentSize += recievedData;
-				fwrite(filePart, 1, SEGMENT_SIZE, downloadedFile);
+				fwrite(filePart, 1, recievedData, downloadedFile);
 			}
 			else
 			{
@@ -104,12 +104,12 @@ int downloadFileToClient(SOCKET& socket, char* recvBuffer, size_t offset)
 		fclose(downloadedFile);
 	}
 	send(socket, "!", 2, 0);
-	recv(socket, recvBuffer, 20, 0);
+	recv(socket, recvBuffer, 30, 0);
 	return 0;
 }
 
 void checkForDownloadingState(SOCKET& socket, string clientAddress,
-	map<string, stoppedDownload>& stoppedDownloads, string filename, int opResult)
+	map<string, stoppedDownload>& stoppedDownloads, string filename, int opResult, const char *message)
 {
 	char synchroBytes[2];
 	if (opResult > 0)
@@ -118,7 +118,7 @@ void checkForDownloadingState(SOCKET& socket, string clientAddress,
 	{
 		recv(socket, synchroBytes, 2, 0);
 		if (opResult == 0)
-			send(socket, "Download successful", 20, 0);
+			send(socket, message, 30, 0);
 		else
 			send(socket, "File doesn't exists", 20, 0);
 	}
@@ -203,16 +203,29 @@ int startServer(string serverIp)
 		cout << "Connection accepted from " << clientAddress << endl;
 		send(clientSocket, "Connected succesfully\n\r", 24, 0);
 		recv(clientSocket, synchroBytes, 2, 0);
+		char recvBuffer[30];
+		char cOffset[64];
 		if (stoppedDownloads.count(clientAddress))
 		{
 			send(clientSocket, "resumeD", 8, 0);
-			char cOffset[64];
 			_itoa(stoppedDownloads[clientAddress].sentPart, cOffset, 10);
 			send(clientSocket, cOffset, 64, 0);
 			int opResult = downloadFileFromServer(stoppedDownloads[clientAddress].filename, clientSocket,
 				stoppedDownloads[clientAddress].sentPart);
 			checkForDownloadingState(clientSocket, clientAddress, stoppedDownloads,
-				stoppedDownloads[clientAddress].filename, opResult);
+				stoppedDownloads[clientAddress].filename, opResult, "Downloaded successfully");
+		}
+		else
+			send(clientSocket, "ok", 2, 0);
+		if (stoppedUploads.count(clientAddress))
+		{
+			send(clientSocket, "resumeU", 8, 0);
+			send(clientSocket, cOffset, 64, 0);
+			send(clientSocket, stoppedUploads[clientAddress].filename.c_str(), 255, 0);
+			_itoa(stoppedUploads[clientAddress].sentPart, cOffset, 10);
+			int opResult = downloadFileToClient(clientSocket, recvBuffer, stoppedUploads[clientAddress].sentPart);
+			checkForDownloadingState(clientSocket, clientAddress, stoppedDownloads,
+				stoppedDownloads[clientAddress].filename, opResult, "Uploaded successfully");
 		}
 		else
 			send(clientSocket, "ok", 2, 0);
@@ -267,22 +280,24 @@ int startServer(string serverIp)
 				}
 				if (pos = sRecvBuffer.rfind("DOWNLOAD ", 0) == 0)
 				{
+					cout << "Download command" << endl;
 					string filename = sRecvBuffer;
 					size_t offset = 0;
 					filename.erase(pos - 1, 9);
 					int opResult = downloadFileFromServer(filename, clientSocket, 0);
 					checkForDownloadingState(clientSocket, clientAddress, stoppedDownloads,
-						filename, opResult);
+						filename, opResult, "Downloaded successfully");
 					continue;
 				}
 				if (pos = sRecvBuffer.rfind("UPLOAD ", 0) == 0)
 				{
+					cout << "Upload command" << endl;
 					string filename = sRecvBuffer;
 					size_t offset = 0;
-					char recvBuffer[30];
 					filename.erase(pos - 1, 9);
 					int opResult = downloadFileToClient(clientSocket, recvBuffer, 0);
-					checkForDownloadingState(clientSocket, clientAddress, stoppedUploads, filename, opResult);
+					cout << recvBuffer << endl;
+					checkForDownloadingState(clientSocket, clientAddress, stoppedUploads, filename, opResult, recvBuffer);
 					continue;
 				}
 				if (isInvalidCommand)
@@ -343,12 +358,24 @@ int startClient(string serverIp)
 	cout << recvBuffer;
 	send(clientSocket, "!", 2, 0);
 	recv(clientSocket, recvBuffer, 8, 0);
+	char offset[64];
 	if (strcmp(recvBuffer, "resumeD") == 0)
 	{
-		char offset[64];
+		ZeroMemory(offset, 64);
 		recv(clientSocket, offset, 64, 0);
 		cout << "Attempting to re-download recent file..." << endl;
 		downloadFileToClient(clientSocket, recvBuffer, atoi(offset));
+		cout << recvBuffer << endl;
+	}
+	if (strcmp(recvBuffer, "resumeU") == 0)
+	{
+		ZeroMemory(offset, 64);
+		recv(clientSocket, offset, 64, 0);
+		char filename[255];
+		ZeroMemory(filename, 255);
+		recv(clientSocket, filename, 255, 0);
+		cout << "Attempting to re-upload recent file..." << endl;
+		downloadFileFromServer(filename, clientSocket, atoi(offset));
 		cout << recvBuffer << endl;
 	}
 	cout << "ECHO - print the string\nTIME - print server time\nDOWNLOAD - download a file from the server\nUPLOAD - upload a file to the server\nEXIT\n";
@@ -370,7 +397,9 @@ int startClient(string serverIp)
 			string filename = sendBuffer;
 			filename.erase(pos - 1, 7);
 			downloadFileFromServer(filename, clientSocket, 0);
-			skipResponse = true;
+			recv(clientSocket, recvBuffer, 2, 0);
+			send(clientSocket, "Uploaded successfully", 22, 0);
+			send(clientSocket, "!", 2, 0);
 		}
 		if (!skipResponse)
 			recv(clientSocket, recvBuffer, 64, 0);
