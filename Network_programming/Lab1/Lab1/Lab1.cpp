@@ -64,7 +64,7 @@ int downloadFileFromServer(string filename, SOCKET& socket, size_t offset)
 		}
 	}
 	fclose(fileToSend);
-	return 0;
+	return -2;
 }
 
 int downloadFileToClient(SOCKET& socket, char* recvBuffer, size_t offset)
@@ -80,15 +80,12 @@ int downloadFileToClient(SOCKET& socket, char* recvBuffer, size_t offset)
 		send(socket, "!", 2, 0);
 		FILE* downloadedFile;
 		downloadedFile = fopen(filename, "ab");
-		size_t fileSize = atoi(size), currentSize = offset, recievedData;
+		size_t fileSize = atoi(size), currentSize = offset, recievedData = 0;
 		char* filePart = new char[SEGMENT_SIZE];
 		ZeroMemory(filePart, SEGMENT_SIZE);
-		fd_set sockets;
-		sockets.fd_count = 1;
-		sockets.fd_array[0] = socket;
 		while (currentSize < fileSize)
 		{
-			if (select(0, &sockets, &sockets, &sockets, new TIMEVAL{ 5, 0 }) == 1)
+			if (send(socket, "", 0, 0) != SOCKET_ERROR)
 			{
 				recievedData = recv(socket, filePart, SEGMENT_SIZE, 0);
 				send(socket, "!", 2, 0);
@@ -98,26 +95,26 @@ int downloadFileToClient(SOCKET& socket, char* recvBuffer, size_t offset)
 			else
 			{
 				fclose(downloadedFile);
-				return currentSize;
+				return currentSize - recievedData;
 			}
 		}
 		fclose(downloadedFile);
 	}
 	send(socket, "!", 2, 0);
 	recv(socket, recvBuffer, 30, 0);
-	return 0;
+	return -2;
 }
 
 void checkForDownloadingState(SOCKET& socket, string clientAddress,
 	map<string, stoppedDownload>& stoppedDownloads, string filename, int opResult, const char *message)
 {
 	char synchroBytes[2];
-	if (opResult > 0)
+	if (opResult >= 0)
 		stoppedDownloads[clientAddress] = stoppedDownload{ filename, (size_t)opResult };
 	else
 	{
 		recv(socket, synchroBytes, 2, 0);
-		if (opResult == 0)
+		if (opResult == -2)
 			send(socket, message, 30, 0);
 		else
 			send(socket, "File doesn't exists", 20, 0);
@@ -367,6 +364,7 @@ int startClient(string serverIp)
 		downloadFileToClient(clientSocket, recvBuffer, atoi(offset));
 		cout << recvBuffer << endl;
 	}
+	recv(clientSocket, recvBuffer, 8, 0);
 	if (strcmp(recvBuffer, "resumeU") == 0)
 	{
 		ZeroMemory(offset, 64);
@@ -379,6 +377,7 @@ int startClient(string serverIp)
 		cout << recvBuffer << endl;
 	}
 	cout << "ECHO - print the string\nTIME - print server time\nDOWNLOAD - download a file from the server\nUPLOAD - upload a file to the server\nEXIT\n";
+	ZeroMemory(recvBuffer, 64);
 	cin.ignore(INT_MAX, '\n');
 	while (true)
 	{
