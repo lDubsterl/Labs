@@ -175,7 +175,7 @@ int startServer(string serverIp)
 	do
 	{
 		clientSocket = INVALID_SOCKET;
-		for (tryCounter = 1; tryCounter < 5; tryCounter++)
+		for (tryCounter = 1; tryCounter < 20; tryCounter++)
 			if (select(0, &sockets, &sockets, &sockets, new TIMEVAL{ 2, 0 }) == 1)
 			{
 				clientSocket = accept(serverSocket, (sockaddr*)(&client), &len);
@@ -217,6 +217,7 @@ int startServer(string serverIp)
 		if (stoppedUploads.count(clientAddress))
 		{
 			send(clientSocket, "resumeU", 8, 0);
+			_itoa(stoppedUploads[clientAddress].sentPart, cOffset, 10);
 			send(clientSocket, cOffset, 64, 0);
 			send(clientSocket, stoppedUploads[clientAddress].filename.c_str(), 255, 0);
 			_itoa(stoppedUploads[clientAddress].sentPart, cOffset, 10);
@@ -291,7 +292,7 @@ int startServer(string serverIp)
 					cout << "Upload command" << endl;
 					string filename = sRecvBuffer;
 					size_t offset = 0;
-					filename.erase(pos - 1, 9);
+					filename.erase(pos - 1, 7);
 					int opResult = downloadFileToClient(clientSocket, recvBuffer, 0);
 					cout << recvBuffer << endl;
 					checkForDownloadingState(clientSocket, clientAddress, stoppedUploads, filename, opResult, recvBuffer);
@@ -373,8 +374,8 @@ int startClient(string serverIp)
 		ZeroMemory(filename, 255);
 		recv(clientSocket, filename, 255, 0);
 		cout << "Attempting to re-upload recent file..." << endl;
-		downloadFileFromServer(filename, clientSocket, atoi(offset));
-		cout << recvBuffer << endl;
+		if (downloadFileFromServer(filename, clientSocket, atoi(offset)) == -2)
+			cout << "Uploaded succesfully" << endl;
 	}
 	cout << "ECHO - print the string\nTIME - print server time\nDOWNLOAD - download a file from the server\nUPLOAD - upload a file to the server\nEXIT\n";
 	ZeroMemory(recvBuffer, 64);
@@ -417,9 +418,9 @@ int main(int argc, char* argv[])
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 	int choice;
 	string serverIp;
-	//cout << "Enter server ip: ";
-	//cin >> serverIp;
-	serverIp += "localhost";
+	cout << "Enter server ip: ";
+	cin >> serverIp;
+	//serverIp += "localhost";
 	cout << "1. Client\n2. Server\n";
 	cin >> choice;
 	if (choice == 1)
