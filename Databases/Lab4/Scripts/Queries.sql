@@ -1,27 +1,47 @@
---select "Passport number", "Parktime", "Auto number" from "Client"
---inner join "Auto" on "Auto"."Client number" = "Client"."Passport number";
+--select "Surname", "Name", "Otchestvo", "Parktime", "Auto number" from "Clients"
+--inner join "Autos" on "Autos"."Client number" = "Clients"."Passport number";
 
---select "Client number", "Auto"."Auto number", "Place number" from "Auto"
---inner join "Place" on "Place"."Auto number" = "Auto"."Auto number";
+--select "Client number", "Autos"."Auto number", "Place number" from "Autos"
+--inner join "Places" on "Places"."Auto number" = "Autos"."Auto number";
 
---select "Elevator number", "lift capacity", "Auto number", "Mass" from "Elevator"
---left outer join "Auto" on "Auto"."Mass" <= "Elevator"."lift capacity" where "Mass" > 7200;
+--select "Elevator number", "lift capacity", "Auto number", "Mass" from "Elevators"
+--left outer join "Autos" on "Autos"."Mass" <= "Elevators"."lift capacity" where "Mass" > 7200;
 
---select "Elevator number", "lift capacity", "Auto number", "Mass" from "Elevator"
---right outer join "Auto" on "Auto"."Mass" <= "Elevator"."lift capacity" where "Mass" > 7200;
+--select "Elevator number", "lift capacity", "Auto number", "Mass" from "Elevators"
+--right outer join "Autos" on "Autos"."Mass" <= "Elevators"."lift capacity" where "Mass" > 7200;
 
---select "Table"."Floor number", "Floor"."Height", "Place type", "Place numbers" from "Floor"
---right outer join "Table" on "Floor"."Floor number" = "Table"."Floor number";
+--select "Tables"."Floor number", "Floors"."Height", "Place type", "Place numbers" from "Floors"
+--right outer join "Tables" on "Floors"."Floor number" = "Tables"."Floor number";
 
---select "Table"."Floor number", "Floor"."Height", "Place type", "Place numbers" from "Floor"
---left outer join "Table" on "Floor"."Floor number" = "Table"."Floor number";
+--select "Tables"."Floor number", "Floors"."Height", "Place type", "Place numbers" from "Floors"
+--left outer join "Tables" on "Floors"."Floor number" = "Tables"."Floor number";
 
---select * from "Client" cross join "Place" where "Parktime" > 22 and "Surname" = 'Kirkorov';
+--select * from "Clients" cross join "Places" where "Parktime" > 22 and "Surname" = 'Kirkorov';
 
---select * from "Table" cross join "Client" where "Floor number" = 2 and "Parktime" > 10;
+--select * from "Tables" cross join "Clients" where "Floor number" = 2 and "Parktime" > 10;
 
-select * from "Auto" full outer join "Place" 
-on "Auto"."Auto number" = "Place"."Auto number" order by "Auto"."Auto number" desc;
+--select * from "Autos" full outer join "Places" 
+--on "Autos"."Auto number" = "Places"."Auto number" order by "Autos"."Auto number" desc;
 
---select * from "Client" full outer join "Auto" 
---on "Passport number" = "Client number";
+select * from "Clients" full outer join "Autos" 
+on "Passport number" = "Client number";
+
+--SELECT * FROM "Clients" ORDER BY "Parktime" DESC;
+
+--SELECT * FROM "Autos" WHERE "Mass" > 5000;
+
+--SELECT * FROM "Clients" WHERE "Parktime" > 15 ORDER BY "Passport number" ASC;
+
+--SELECT * FROM "Places";
+
+--SELECT "Floor number", "Places amount" FROM "Floors";
+
+
+
+
+
+
+
+
+
+
