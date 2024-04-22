@@ -123,7 +123,7 @@ void checkForDownloadingState(SOCKET& socket, string clientAddress,
 	}
 }
 
-int processClientCommands(SOCKET& clientSocket, string clientAddress, chrono::steady_clock::time_point date, map<string, stoppedDownload> stoppedDownloads,
+int processClientCommands(SOCKET clientSocket, string clientAddress, chrono::steady_clock::time_point date, map<string, stoppedDownload> stoppedDownloads,
 	map<string, stoppedDownload> stoppedUploads)
 {
 	char ch, recvBuffer[30];
@@ -293,7 +293,7 @@ int startServer(string serverIp)
 		}
 		else
 			send(clientSocket, "ok", 2, 0);
-		thread processingThread(processClientCommands, ref(clientSocket), clientAddress, date, stoppedDownloads, stoppedUploads);
+		thread processingThread(processClientCommands, clientSocket, clientAddress, date, stoppedDownloads, stoppedUploads);
 		processingThread.detach();
 	} while (true);
 }
@@ -406,9 +406,9 @@ int main(int argc, char* argv[])
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 	int choice;
 	string serverIp;
-	/*cout << "Enter server ip: ";
-	cin >> serverIp;*/
-	serverIp += "localhost";
+	cout << "Enter server ip: ";
+	cin >> serverIp;
+	//serverIp += "localhost";
 	cout << "1. Client\n2. Server\n";
 	cin >> choice;
 	if (choice == 1)
