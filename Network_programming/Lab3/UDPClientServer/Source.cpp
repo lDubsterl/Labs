@@ -268,7 +268,7 @@ int startServer(string serverIp)
 				}
 				if (isInvalidCommand)
 					sendBuffer += "Invalid command";
-				sendto(serverSocket, sendBuffer.c_str(), 64, 0, address, 0);
+				sendto(serverSocket, sendBuffer.c_str(), 64, 0, address, FROMLEN);
 			}
 			else if (iResult == 0)
 				cout << "Closing connection..." << "\n";
@@ -318,6 +318,7 @@ int startClient(string serverIp)
 		sendBuffer += '\n';
 		bool skipResponse = false;
 		iResult = sendto(clientSocket, sendBuffer.c_str(), sendBuffer.size(), 0, address, FROMLEN);
+
 		if (size_t pos = sendBuffer.rfind("DOWNLOAD ", 0) == 0)
 		{
 			downloadFileToClient(clientSocket, recvBuffer, address, 0);
