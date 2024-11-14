@@ -20,9 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="spolks_mpi_3.cpp" />
-    <ClCompile Include="spolks_mpi_4_file.cpp" />
-    <ClCompile Include="spolks_mpi_4_group.cpp" />
-    <ClCompile Include="spolks_mpi_4_group_fake.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -155,7 +152,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files\MPICH2\lib;C:\Program Files %28x86%29\OCL_SDK_Light\lib\x86_64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mpi.lib;opencl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mpi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -183,7 +180,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files\MPICH2\lib;C:\Program Files %28x86%29\OCL_SDK_Light\lib\x86_64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mpi.lib;opencl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mpi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
