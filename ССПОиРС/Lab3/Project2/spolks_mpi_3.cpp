@@ -11,589 +11,635 @@
 
 using namespace std;
 
-typedef double mtx_data;
+typedef double MatrixData;
 
-constexpr uint64_t chunk_size(64);
-constexpr chrono::milliseconds chunk_wait(1);
+constexpr uint64_t chunk_size = 64; // Размер блока данных
+constexpr chrono::milliseconds ChunkProcessingDelay(1); // Задержка обработки блока
 
-enum class mode : uint64_t
+enum class ProcessingMode : uint64_t
 {
-	sync,
-	async
+	Synchronous, // Синхронный режим
+	Asynchronous  // Асинхронный режим
 };
 
+
 template <typename T>
-void mtx_wrap_beg
-(
-	const T* n_mtx_1,
-	const T* n_mtx_2,
-	T* n_mtx_3,
-	uint64_t nx,
-	uint64_t ny,
-	uint64_t nz,
-	T*& mtx_1,
-	T*& mtx_2,
-	T*& mtx_3,
-	uint64_t& mx,
-	uint64_t& my,
-	uint64_t& mz
+void wrapMatrixData(
+	const T* inputMatrix1,
+	const T* inputMatrix2,
+	T* outputMatrix,
+	uint64_t numRows1,
+	uint64_t numCols1,
+	uint64_t numCols2,
+	T*& matrix1,
+	T*& matrix2,
+	T*& matrix3,
+	uint64_t& wrappedRows1,
+	uint64_t& wrappedCols1,
+	uint64_t& wrappedCols2
 )
 {
-	function<uint64_t(uint64_t)> mtx_wrap_size = [](uint64_t m)
-	{
-		constexpr uint64_t double_chunk = chunk_size * 2Ui64, undouble_chunk = chunk_size * 2Ui64 - 1Ui64;
-		return m == 0Ui64 ? double_chunk : ((m + undouble_chunk) / double_chunk) * double_chunk;
-	};
+	// Функция для вычисления размера матрицы с учетом выравнивания
+	function<uint64_t(uint64_t)> calculateWrappedSize = [](uint64_t size)
+		{
+			constexpr uint64_t doubleChunk = chunk_size * 2Ui64;
+			constexpr uint64_t undoubleChunk = chunk_size * 2Ui64 - 1Ui64;
+			return size == 0Ui64 ? doubleChunk : ((size + undoubleChunk) / doubleChunk) * doubleChunk;
+		};
 
-	mx = mtx_wrap_size(nx);
-	my = mtx_wrap_size(ny);
-	mz = mtx_wrap_size(nz);
+	// Вычисление выровненных размеров для матриц
+	wrappedRows1 = calculateWrappedSize(numRows1);
+	wrappedCols1 = calculateWrappedSize(numCols1);
+	wrappedCols2 = calculateWrappedSize(numCols2);
 
-	if (mx == nx && my == ny)
-		mtx_1 = (T*)n_mtx_1;
+	// Обработка первой матрицы
+	if (wrappedRows1 == numRows1 && wrappedCols1 == numCols1)
+		matrix1 = (T*)inputMatrix1;
 	else
 	{
-		mtx_1 = new T[mx * my];
+		matrix1 = new T[wrappedRows1 * wrappedCols1];
 
-		for (uint64_t ni = 0; ni < nx; ++ni)
+		for (uint64_t row = 0; row < numRows1; ++row)
 		{
-			for (uint64_t nj = 0; nj < ny; ++nj)
-				mtx_1[ni * my + nj] = n_mtx_1[ni * ny + nj];
+			for (uint64_t col = 0; col < numCols1; ++col)
+				matrix1[row * wrappedCols1 + col] = inputMatrix1[row * numCols1 + col];
 
-			for (uint64_t mj = ny; mj < my; ++mj)
-				mtx_1[ni * my + mj] = T(0);
+			// Заполнение оставшейся части нулями
+			for (uint64_t col = numCols1; col < wrappedCols1; ++col)
+				matrix1[row * wrappedCols1 + col] = T(0);
 		}
 
-		for (uint64_t m = nx * my; m < mx * my; ++m)
-			mtx_1[m] = T(0);
+		// Заполнение оставшейся части матрицы нулями
+		for (uint64_t i = numRows1 * wrappedCols1; i < wrappedRows1 * wrappedCols1; ++i)
+			matrix1[i] = T(0);
 	}
 
-	if (my == ny && mz == nz)
-		mtx_2 = (T*)n_mtx_2;
+	// Обработка второй матрицы
+	if (wrappedCols1 == numCols1 && wrappedCols2 == numCols2)
+		matrix2 = (T*)inputMatrix2;
 	else
 	{
-		mtx_2 = new T[my * mz];
+		matrix2 = new T[wrappedCols1 * wrappedCols2];
 
-		for (uint64_t nj = 0; nj < ny; ++nj)
+		for (uint64_t row = 0; row < numCols1; ++row)
 		{
-			for (uint64_t nk = 0; nk < nz; ++nk)
-				mtx_2[nj * mz + nk] = n_mtx_2[nj * nz + nk];
+			for (uint64_t col = 0; col < numCols2; ++col)
+				matrix2[row * wrappedCols2 + col] = inputMatrix2[row * numCols2 + col];
 
-			for (uint64_t mk = nz; mk < mz; ++mk)
-				mtx_2[nj * mz + mk] = T(0);
+			// Заполнение оставшейся части нулями
+			for (uint64_t col = numCols2; col < wrappedCols2; ++col)
+				matrix2[row * wrappedCols2 + col] = T(0);
 		}
 
-		for (uint64_t m = ny * mz; m < my * mz; ++m)
-			mtx_2[m] = T(0);
+		// Заполнение оставшейся части матрицы нулями
+		for (uint64_t i = numCols1 * wrappedCols2; i < wrappedCols1 * wrappedCols2; ++i)
+			matrix2[i] = T(0);
 	}
 
-	if (mx == nx && mz == nz)
-		mtx_3 = (T*)n_mtx_3;
+	// Обработка третьей матрицы
+	if (wrappedRows1 == numRows1 && wrappedCols2 == numCols2)
+		matrix3 = (T*)outputMatrix;
 	else
-		mtx_3 = new T[mx * mz];
+		matrix3 = new T[wrappedRows1 * wrappedCols2];
 }
 
+
 template <typename T>
-void mtx_wrap_end
-(
-	const T* n_mtx_1,
-	const T* n_mtx_2,
-	T* n_mtx_3,
-	uint64_t nx,
-	uint64_t ny,
-	uint64_t nz,
-	T* mtx_1,
-	T* mtx_2,
-	T* mtx_3,
-	uint64_t mx,
-	uint64_t my,
-	uint64_t mz
+void wrapMatrixDataEnd(
+	const T* inputMatrix1,
+	const T* inputMatrix2,
+	T* outputMatrix,
+	uint64_t numRows1,
+	uint64_t numCols1,
+	uint64_t numCols2,
+	T* matrix1,
+	T* matrix2,
+	T* matrix3,
+	uint64_t wrappedRows1,
+	uint64_t wrappedCols1,
+	uint64_t wrappedCols2
 )
 {
-	if (!(mx == nx && my == ny))
-		delete[] mtx_1;
+	// Очистка выделенной памяти для выровненных матриц, если размеры не совпадают с исходными
+	if (!(wrappedRows1 == numRows1 && wrappedCols1 == numCols1))
+		delete[] matrix1;
 
-	if (!(my == ny && mz == nz))
-		delete[] mtx_2;
+	if (!(wrappedCols1 == numCols1 && wrappedCols2 == numCols2))
+		delete[] matrix2;
 
-	if (!(mx == nx && mz == nz))
+	if (!(wrappedRows1 == numRows1 && wrappedCols2 == numCols2))
 	{
-		for (uint64_t ni = 0; ni < nx; ++ni)
-			for (uint64_t nk = 0; nk < nz; ++nk)
-				n_mtx_3[ni * nz + nk] = mtx_3[ni * mz + nk];
+		// Перенос данных из выровненной третьей матрицы в исходную
+		for (uint64_t row = 0; row < numRows1; ++row)
+			for (uint64_t col = 0; col < numCols2; ++col)
+				outputMatrix[row * numCols2 + col] = matrix3[row * wrappedCols2 + col];
 
-		delete[] mtx_3;
+		// Освобождение памяти для третьей матрицы
+		delete[] matrix3;
 	}
 }
 
 template <typename T>
-void mtx_multiply_2(const T* mtx_1, const T* mtx_2, T* mtx_3, uint64_t mx, uint64_t my, uint64_t mz)
-{
-	for (uint64_t m = 0; m < mx * mz; ++m)
-		mtx_3[m] = T(0);
-
-	for (uint64_t mi = 0; mi < mx; ++mi)
-		for (uint64_t mk = 0; mk < my; ++mk)
-			for (uint64_t mj = 0; mj < mz; ++mj)
-				mtx_3[mi * mz + mj] += mtx_1[mi * my + mk] * mtx_2[mk * mz + mj];
-}
-
-template <typename T>
-void mtx_multiply
-(
-	const T* mtx_1,
-	const T* mtx_2,
-	T* mtx_3,
-	uint64_t mx,
-	uint64_t my,
-	uint64_t mz,
-	const bool* chk_1 = nullptr,
-	const bool* chk_2 = nullptr,
-	bool* chk_3 = nullptr
+void multiplyMatrices(
+	const T* matrix1,
+	const T* matrix2,
+	T* resultMatrix,
+	uint64_t rows1,
+	uint64_t cols1,
+	uint64_t cols2
 )
 {
-	uint64_t cx = mx / chunk_size, cy = my / chunk_size, cz = mz / chunk_size;
+	// Инициализация результата нулями
+	for (uint64_t i = 0; i < rows1 * cols2; ++i)
+		resultMatrix[i] = T(0);
 
-	for (uint64_t m = 0; m < mx * mz; ++m)
-		mtx_3[m] = T(0);
+	// Умножение матриц
+	for (uint64_t i = 0; i < rows1; ++i)
+		for (uint64_t k = 0; k < cols1; ++k)
+			for (uint64_t j = 0; j < cols2; ++j)
+				resultMatrix[i * cols2 + j] += matrix1[i * cols1 + k] * matrix2[k * cols2 + j];
+}
 
-	for (uint64_t mi = 0, ci = 0; mi < mx; mi += chunk_size, ++ci)
-		for (uint64_t mk = 0, ck = 0; mk < mz; mk += chunk_size, ++ck)
+
+template <typename T>
+void multiplyMatricesWithChunks(
+	const T* matrix1,
+	const T* matrix2,
+	T* resultMatrix,
+	uint64_t rowsMatrix1,
+	uint64_t colsMatrix1,
+	uint64_t colsMatrix2,
+	const bool* chunkStatus1 = nullptr,
+	const bool* chunkStatus2 = nullptr,
+	bool* chunkStatus3 = nullptr
+)
+{
+	uint64_t chunkRowsMatrix1 = rowsMatrix1 / chunk_size, chunkColsMatrix1 = colsMatrix1 / chunk_size, chunkColsMatrix2 = colsMatrix2 / chunk_size;
+
+	// Инициализация результата
+	for (uint64_t i = 0; i < rowsMatrix1 * colsMatrix2; ++i)
+		resultMatrix[i] = T(0);
+
+	// Обработка блоками
+	for (uint64_t rowStart = 0, chunkRowIndex = 0; rowStart < rowsMatrix1; rowStart += chunk_size, ++chunkRowIndex)
+		for (uint64_t colStart = 0, chunkColIndex = 0; colStart < colsMatrix2; colStart += chunk_size, ++chunkColIndex)
 		{
-			for (uint64_t mj = 0, cj = 0; mj < my; mj += chunk_size, ++cj)
-			{
-				if (chk_1)
-					while (!chk_1[ci * cy + cj])
-						this_thread::sleep_for(chunk_wait);
+			// Ожидание готовности блоков для синхронизации
+			if (chunkStatus1)
+				while (!chunkStatus1[chunkRowIndex * chunkColsMatrix1 + chunkColIndex])
+					this_thread::sleep_for(ChunkProcessingDelay);
 
-				if (chk_2)
-					while (!chk_2[cj * cz + ck])
-						this_thread::sleep_for(chunk_wait);
+			if (chunkStatus2)
+				while (!chunkStatus2[chunkColIndex * chunkColsMatrix2 + chunkRowIndex])
+					this_thread::sleep_for(ChunkProcessingDelay);
 
-				for (uint64_t i = mi; i < mi + chunk_size; ++i)
-					for (uint64_t j = mj; j < mj + chunk_size; ++j)
-						for (uint64_t k = mk; k < mk + chunk_size; ++k)
-							mtx_3[i * mz + k] += mtx_1[i * my + j] * mtx_2[j * mz + k];
-			}
-
-			if (chk_3)
-				chk_3[ci * cz + ck] = true;
+			// Умножение блоков матриц
+			for (uint64_t i = rowStart; i < rowStart + chunk_size; ++i)
+				for (uint64_t j = colStart; j < colStart + chunk_size; ++j)
+					for (uint64_t k = 0; k < colsMatrix1; ++k)
+						resultMatrix[i * colsMatrix2 + j] += matrix1[i * colsMatrix1 + k] * matrix2[k * colsMatrix2 + j];
+			// Обновление статуса блока результата
+			if (chunkStatus3)
+				chunkStatus3[chunkRowIndex * chunkColsMatrix2 + chunkColIndex] = true;
 		}
 }
 
+
 template <typename T>
-void mtx_chunk_receiver
-(
-	T* mtx,
-	uint64_t m1,
-	uint64_t m2,
-	MPI_Comm com,
-	int src,
-	int tag,
-	bool inv_traversal,
-	bool* chk = nullptr
+void receiveMatrixChunks(
+	T* matrix,
+	uint64_t rows,
+	uint64_t cols,
+	MPI_Comm communicator,
+	int sourceRank,
+	int messageTag,
+	bool inverseTraversalOrder,
+	bool* chunkStatus = nullptr
 )
 {
-	uint64_t c1 = m1 / chunk_size, c2 = m2 / chunk_size;
-	T* buf = new T[chunk_size * chunk_size];
+	uint64_t chunkRows = rows / chunk_size, chunkCols = cols / chunk_size;
+	T* buffer = new T[chunk_size * chunk_size];  // Буфер для приема данных
 
-	if (inv_traversal)
-		for (uint64_t mj = 0, cj = 0; mj < m2; mj += chunk_size, ++cj)
-			for (uint64_t mi = 0, ci = 0; mi < m1; mi += chunk_size, ++ci)
+	if (inverseTraversalOrder)
+	{
+		// Получение блоков в обратном порядке
+		for (uint64_t colStart = 0, chunkColIndex = 0; colStart < cols; colStart += chunk_size, ++chunkColIndex)
+			for (uint64_t rowStart = 0, chunkRowIndex = 0; rowStart < rows; rowStart += chunk_size, ++chunkRowIndex)
 			{
-				MPI_Status mpi_status;
-				MPI_Recv((void*)buf, (int)(chunk_size * chunk_size * sizeof(T)), MPI_BYTE, src, tag, com, &mpi_status);
+				// Получаем данные из MPI
+				MPI_Status mpiStatus;
+				MPI_Recv((void*)buffer, (int)(chunk_size * chunk_size * sizeof(T)), MPI_BYTE, sourceRank, messageTag, communicator, &mpiStatus);
 
-				for (uint64_t i = mi, ii = 0; i < mi + chunk_size; ++i, ++ii)
-					for (uint64_t j = mj, jj = 0; j < mj + chunk_size; ++j, ++jj)
-						mtx[i * m2 + j] = buf[ii * chunk_size + jj];
+				// Копируем данные в соответствующий участок матрицы
+				for (uint64_t i = rowStart, bufRow = 0; i < rowStart + chunk_size; ++i, ++bufRow)
+					for (uint64_t j = colStart, bufCol = 0; j < colStart + chunk_size; ++j, ++bufCol)
+						matrix[i * cols + j] = buffer[bufRow * chunk_size + bufCol];
 
-				if (chk)
-					chk[ci * c2 + cj] = true;
+				if (chunkStatus)
+					chunkStatus[chunkRowIndex * chunkCols + chunkColIndex] = true;
 			}
+	}
 	else
-		for (uint64_t mi = 0, ci = 0; mi < m1; mi += chunk_size, ++ci)
-			for (uint64_t mj = 0, cj = 0; mj < m2; mj += chunk_size, ++cj)
+	{
+		// Получение блоков в обычном порядке
+		for (uint64_t rowStart = 0, chunkRowIndex = 0; rowStart < rows; rowStart += chunk_size, ++chunkRowIndex)
+			for (uint64_t colStart = 0, chunkColIndex = 0; colStart < cols; colStart += chunk_size, ++chunkColIndex)
 			{
-				MPI_Status mpi_status;
-				MPI_Recv((void*)buf, (int)(chunk_size * chunk_size * sizeof(T)), MPI_BYTE, src, tag, com, &mpi_status);
+				// Получаем данные из MPI
+				MPI_Status mpiStatus;
+				MPI_Recv((void*)buffer, (int)(chunk_size * chunk_size * sizeof(T)), MPI_BYTE, sourceRank, messageTag, communicator, &mpiStatus);
 
-				for (uint64_t i = mi, ii = 0; i < mi + chunk_size; ++i, ++ii)
-					for (uint64_t j = mj, jj = 0; j < mj + chunk_size; ++j, ++jj)
-						mtx[i * m2 + j] = buf[ii * chunk_size + jj];
+				// Копируем данные в соответствующий участок матрицы
+				for (uint64_t i = rowStart, bufRow = 0; i < rowStart + chunk_size; ++i, ++bufRow)
+					for (uint64_t j = colStart, bufCol = 0; j < colStart + chunk_size; ++j, ++bufCol)
+						matrix[i * cols + j] = buffer[bufRow * chunk_size + bufCol];
 
-				if (chk)
-					chk[ci * c2 + cj] = true;
+				if (chunkStatus)
+					chunkStatus[chunkRowIndex * chunkCols + chunkColIndex] = true;
 			}
+	}
 
-	delete[] buf;
+	// Освобождение памяти для буфера
+	delete[] buffer;
 }
 
+
 template <typename T>
-void mtx_chunk_sender
-(
-	const T* mtx,
-	uint64_t m1,
-	uint64_t m2,
-	MPI_Comm com,
-	int dst,
-	int tag,
-	bool inv_traversal,
-	const bool* chk = nullptr
+void sendMatrixChunks(
+	const T* matrix,
+	uint64_t numRows,
+	uint64_t numCols,
+	MPI_Comm communicator,
+	int destinationRank,
+	int messageTag,
+	bool inverseTraversalOrder,
+	const bool* chunkReadyStatus = nullptr
 )
 {
-	uint64_t c1 = m1 / chunk_size, c2 = m2 / chunk_size;
-	T* buf = new T[chunk_size * chunk_size];
+	uint64_t chunksInRows = numRows / chunk_size;
+	uint64_t chunksInCols = numCols / chunk_size;
+	T* buffer = new T[chunk_size * chunk_size];  // Буфер для хранения одного блока данных
 
-	if (inv_traversal)
-		for (uint64_t mj = 0, cj = 0; mj < m2; mj += chunk_size, ++cj)
-			for (uint64_t mi = 0, ci = 0; mi < m1; mi += chunk_size, ++ci)
+	if (inverseTraversalOrder)
+	{
+		// Отправка блоков в обратном порядке
+		for (uint64_t colStart = 0, chunkColIndex = 0; colStart < numCols; colStart += chunk_size, ++chunkColIndex)
+			for (uint64_t rowStart = 0, chunkRowIndex = 0; rowStart < numRows; rowStart += chunk_size, ++chunkRowIndex)
 			{
-				if (chk)
-					while (!chk[ci * c2 + cj])
-						this_thread::sleep_for(chunk_wait);
+				// Ожидание готовности блока
+				if (chunkReadyStatus)
+					while (!chunkReadyStatus[chunkRowIndex * chunksInCols + chunkColIndex])
+						this_thread::sleep_for(ChunkProcessingDelay);
 
-				for (uint64_t i = mi, ii = 0; i < mi + chunk_size; ++i, ++ii)
-					for (uint64_t j = mj, jj = 0; j < mj + chunk_size; ++j, ++jj)
-						buf[ii * chunk_size + jj] = mtx[i * m2 + j];
+				// Копирование данных в буфер
+				for (uint64_t i = rowStart, bufRow = 0; i < rowStart + chunk_size; ++i, ++bufRow)
+					for (uint64_t j = colStart, bufCol = 0; j < colStart + chunk_size; ++j, ++bufCol)
+						buffer[bufRow * chunk_size + bufCol] = matrix[i * numCols + j];
 
-				MPI_Send((void*)buf, (int)(chunk_size * chunk_size * sizeof(T)), MPI_BYTE, dst, tag, com);
+				// Отправка данных через MPI
+				MPI_Send((void*)buffer, (int)(chunk_size * chunk_size * sizeof(T)), MPI_BYTE, destinationRank, messageTag, communicator);
 			}
+	}
 	else
-		for (uint64_t mi = 0, ci = 0; mi < m1; mi += chunk_size, ++ci)
-			for (uint64_t mj = 0, cj = 0; mj < m2; mj += chunk_size, ++cj)
+	{
+		// Отправка блоков в обычном порядке
+		for (uint64_t rowStart = 0, chunkRowIndex = 0; rowStart < numRows; rowStart += chunk_size, ++chunkRowIndex)
+			for (uint64_t colStart = 0, chunkColIndex = 0; colStart < numCols; colStart += chunk_size, ++chunkColIndex)
 			{
-				if (chk)
-					while (!chk[ci * c2 + cj])
-						this_thread::sleep_for(chunk_wait);
+				// Ожидание готовности блока
+				if (chunkReadyStatus)
+					while (!chunkReadyStatus[chunkRowIndex * chunksInCols + chunkColIndex])
+						this_thread::sleep_for(ChunkProcessingDelay);
 
-				for (uint64_t i = mi, ii = 0; i < mi + chunk_size; ++i, ++ii)
-					for (uint64_t j = mj, jj = 0; j < mj + chunk_size; ++j, ++jj)
-						buf[ii * chunk_size + jj] = mtx[i * m2 + j];
+				// Копирование данных в буфер
+				for (uint64_t i = rowStart, bufRow = 0; i < rowStart + chunk_size; ++i, ++bufRow)
+					for (uint64_t j = colStart, bufCol = 0; j < colStart + chunk_size; ++j, ++bufCol)
+						buffer[bufRow * chunk_size + bufCol] = matrix[i * numCols + j];
 
-				MPI_Send((void*)buf, (int)(chunk_size * chunk_size * sizeof(T)), MPI_BYTE, dst, tag, com);
+				// Отправка данных через MPI
+				MPI_Send((void*)buffer, (int)(chunk_size * chunk_size * sizeof(T)), MPI_BYTE, destinationRank, messageTag, communicator);
 			}
+	}
 
-	delete[] buf;
+	// Освобождение памяти для буфера
+	delete[] buffer;
 }
 
+
 template <typename T>
-void mtx_master_worker
-(
-	const T* mtx_1,
-	const T* mtx_2,
-	T* mtx_3,
-	uint64_t mx,
-	uint64_t my,
-	uint64_t mz,
-	uint64_t dx,
-	uint64_t dz,
-	mode __mode,
-	int base_tag,
-	int slave_rank
+void matrixMasterWorker(
+	const T* inputMatrix1,
+	const T* inputMatrix2,
+	T* outputMatrix,
+	uint64_t numRows1,   // mx
+	uint64_t numCols1,   // my
+	uint64_t numCols2,   // mz
+	uint64_t offsetRows1, // dx
+	uint64_t offsetCols2, // dz
+	ProcessingMode executionMode,  // изменено на ProcessingMode
+	int baseTag,
+	int slaveRank
 )
 {
-	MPI_Status mpi_status;
+	MPI_Status mpiStatus;
 
-	MPI_Send((void*)&base_tag, (int)sizeof(int), MPI_BYTE, slave_rank, 0, MPI_COMM_WORLD);
-	MPI_Send((void*)&__mode, (int)sizeof(mode), MPI_BYTE, slave_rank, base_tag + 0, MPI_COMM_WORLD);
+	// Отправка метаданных: baseTag и режим работы
+	MPI_Send((void*)&baseTag, (int)sizeof(int), MPI_BYTE, slaveRank, 0, MPI_COMM_WORLD);
+	MPI_Send((void*)&executionMode, (int)sizeof(ProcessingMode), MPI_BYTE, slaveRank, baseTag + 0, MPI_COMM_WORLD);
 
-	switch (__mode)
+	switch (executionMode)
 	{
-	case mode::sync:
+	case ProcessingMode::Synchronous:  // Синхронный режим
 	{
-		uint64_t x = mx / 2, y = my, z = mz / 2;
+		uint64_t xDim = numRows1 / 2, yDim = numCols1, zDim = numCols2 / 2;
 
-		MPI_Send((void*)&x, (int)sizeof(uint64_t), MPI_BYTE, slave_rank, base_tag + 1, MPI_COMM_WORLD);
-		MPI_Send((void*)&y, (int)sizeof(uint64_t), MPI_BYTE, slave_rank, base_tag + 2, MPI_COMM_WORLD);
-		MPI_Send((void*)&z, (int)sizeof(uint64_t), MPI_BYTE, slave_rank, base_tag + 3, MPI_COMM_WORLD);
+		// Отправка размеров блоков
+		MPI_Send((void*)&xDim, (int)sizeof(uint64_t), MPI_BYTE, slaveRank, baseTag + 1, MPI_COMM_WORLD);
+		MPI_Send((void*)&yDim, (int)sizeof(uint64_t), MPI_BYTE, slaveRank, baseTag + 2, MPI_COMM_WORLD);
+		MPI_Send((void*)&zDim, (int)sizeof(uint64_t), MPI_BYTE, slaveRank, baseTag + 3, MPI_COMM_WORLD);
 
-		T* __mtx_1 = new T[x * y];
-		T* __mtx_2 = new T[y * z];
-		T* __mtx_3 = new T[x * z];
+		// Создание временных матриц для вычислений
+		T* tempMatrix1 = new T[xDim * yDim];
+		T* tempMatrix2 = new T[yDim * zDim];
+		T* tempMatrix3 = new T[xDim * zDim];
 
-		for (uint64_t i = 0; i < x; ++i)
-			for (uint64_t j = 0; j < y; ++j)
-				__mtx_1[i * y + j] = mtx_1[(dx + i) * my + j];
+		// Копирование данных из исходных матриц в временные
+		for (uint64_t i = 0; i < xDim; ++i)
+			for (uint64_t j = 0; j < yDim; ++j)
+				tempMatrix1[i * yDim + j] = inputMatrix1[(offsetRows1 + i) * numCols1 + j];
 
-		for (uint64_t i = 0; i < y; ++i)
-			for (uint64_t j = 0; j < z; ++j)
-				__mtx_2[i * z + j] = mtx_2[i * mz + (dz + j)];
+		for (uint64_t i = 0; i < yDim; ++i)
+			for (uint64_t j = 0; j < zDim; ++j)
+				tempMatrix2[i * zDim + j] = inputMatrix2[i * numCols2 + (offsetCols2 + j)];
 
-		MPI_Send((void*)__mtx_1, (int)(x * y * sizeof(T)), MPI_BYTE, slave_rank, base_tag + 4, MPI_COMM_WORLD);
-		MPI_Send((void*)__mtx_2, (int)(y * z * sizeof(T)), MPI_BYTE, slave_rank, base_tag + 5, MPI_COMM_WORLD);
-		MPI_Recv((void*)__mtx_3, (int)(x * z * sizeof(T)), MPI_BYTE, slave_rank, base_tag + 6, MPI_COMM_WORLD, &mpi_status);
+		// Отправка блоков данных на вычисление
+		MPI_Send((void*)tempMatrix1, (int)(xDim * yDim * sizeof(T)), MPI_BYTE, slaveRank, baseTag + 4, MPI_COMM_WORLD);
+		MPI_Send((void*)tempMatrix2, (int)(yDim * zDim * sizeof(T)), MPI_BYTE, slaveRank, baseTag + 5, MPI_COMM_WORLD);
+		MPI_Recv((void*)tempMatrix3, (int)(xDim * zDim * sizeof(T)), MPI_BYTE, slaveRank, baseTag + 6, MPI_COMM_WORLD, &mpiStatus);
 
-		for (uint64_t i = 0; i < x; ++i)
-			for (uint64_t j = 0; j < z; ++j)
-				mtx_3[(dx + i) * mz + (dz + j)] = __mtx_3[i * z + j];
+		// Копирование результата в итоговую матрицу
+		for (uint64_t i = 0; i < xDim; ++i)
+			for (uint64_t j = 0; j < zDim; ++j)
+				outputMatrix[(offsetRows1 + i) * numCols2 + (offsetCols2 + j)] = tempMatrix3[i * zDim + j];
 
-		delete[] __mtx_1;
-		delete[] __mtx_2;
-		delete[] __mtx_3;
+		// Освобождение временных матриц
+		delete[] tempMatrix1;
+		delete[] tempMatrix2;
+		delete[] tempMatrix3;
 
 		break;
 	}
 
-	case mode::async:
+	case ProcessingMode::Asynchronous:  // Асинхронный режим
 	{
-		uint64_t x = mx / 2, y = my, z = mz / 2;
+		uint64_t xDim = numRows1 / 2, yDim = numCols1, zDim = numCols2 / 2;
 
-		MPI_Send((void*)&x, (int)sizeof(uint64_t), MPI_BYTE, slave_rank, base_tag + 1, MPI_COMM_WORLD);
-		MPI_Send((void*)&y, (int)sizeof(uint64_t), MPI_BYTE, slave_rank, base_tag + 2, MPI_COMM_WORLD);
-		MPI_Send((void*)&z, (int)sizeof(uint64_t), MPI_BYTE, slave_rank, base_tag + 3, MPI_COMM_WORLD);
+		// Отправка размеров блоков
+		MPI_Send((void*)&xDim, (int)sizeof(uint64_t), MPI_BYTE, slaveRank, baseTag + 1, MPI_COMM_WORLD);
+		MPI_Send((void*)&yDim, (int)sizeof(uint64_t), MPI_BYTE, slaveRank, baseTag + 2, MPI_COMM_WORLD);
+		MPI_Send((void*)&zDim, (int)sizeof(uint64_t), MPI_BYTE, slaveRank, baseTag + 3, MPI_COMM_WORLD);
 
-		T* __mtx_1 = new T[x * y];
-		T* __mtx_2 = new T[y * z];
-		T* __mtx_3 = new T[x * z];
+		// Создание временных матриц для вычислений
+		T* tempMatrix1 = new T[xDim * yDim];
+		T* tempMatrix2 = new T[yDim * zDim];
+		T* tempMatrix3 = new T[xDim * zDim];
 
-		for (uint64_t i = 0; i < x; ++i)
-			for (uint64_t j = 0; j < y; ++j)
-				__mtx_1[i * y + j] = mtx_1[(dx + i) * my + j];
+		// Копирование данных из исходных матриц в временные
+		for (uint64_t i = 0; i < xDim; ++i)
+			for (uint64_t j = 0; j < yDim; ++j)
+				tempMatrix1[i * yDim + j] = inputMatrix1[(offsetRows1 + i) * numCols1 + j];
 
-		for (uint64_t i = 0; i < y; ++i)
-			for (uint64_t j = 0; j < z; ++j)
-				__mtx_2[i * z + j] = mtx_2[i * mz + (dz + j)];
+		for (uint64_t i = 0; i < yDim; ++i)
+			for (uint64_t j = 0; j < zDim; ++j)
+				tempMatrix2[i * zDim + j] = inputMatrix2[i * numCols2 + (offsetCols2 + j)];
 
-		thread sender_1([=]()
-			{
-				mtx_chunk_sender(__mtx_1, x, y, MPI_COMM_WORLD, slave_rank, base_tag + 4, false);
-			});
-		thread sender_2([=]()
-			{
-				mtx_chunk_sender(__mtx_2, y, z, MPI_COMM_WORLD, slave_rank, base_tag + 5, true);
-			});
+		// Отправка данных асинхронно с использованием потоков
+		thread sender1([=]() { sendMatrixChunks(tempMatrix1, xDim, yDim, MPI_COMM_WORLD, slaveRank, baseTag + 4, false); });
+		thread sender2([=]() { sendMatrixChunks(tempMatrix2, yDim, zDim, MPI_COMM_WORLD, slaveRank, baseTag + 5, true); });
 
-		sender_1.join();
-		sender_2.join();
+		sender1.join();
+		sender2.join();
 
-		mtx_chunk_receiver(__mtx_3, x, z, MPI_COMM_WORLD, slave_rank, base_tag + 6, false);
+		// Получение результата
+		receiveMatrixChunks(tempMatrix3, xDim, zDim, MPI_COMM_WORLD, slaveRank, baseTag + 6, false);
 
-		for (uint64_t i = 0; i < x; ++i)
-			for (uint64_t j = 0; j < z; ++j)
-				mtx_3[(dx + i) * mz + (dz + j)] = __mtx_3[i * z + j];
+		// Копирование результата в итоговую матрицу
+		for (uint64_t i = 0; i < xDim; ++i)
+			for (uint64_t j = 0; j < zDim; ++j)
+				outputMatrix[(offsetRows1 + i) * numCols2 + (offsetCols2 + j)] = tempMatrix3[i * zDim + j];
 
-		delete[] __mtx_1;
-		delete[] __mtx_2;
-		delete[] __mtx_3;
+		// Освобождение временных матриц
+		delete[] tempMatrix1;
+		delete[] tempMatrix2;
+		delete[] tempMatrix3;
 
 		break;
 	}
 
 	default:
-		cout << "Shit happens\n";
+		cout << "Invalid execution mode\n";
 	}
 }
 
 template <typename T>
-void mtx_master
-(
-	const T* n_mtx_1,
-	const T* n_mtx_2,
-	T* n_mtx_3,
-	uint64_t nx,
-	uint64_t ny,
-	uint64_t nz,
-	mode __mode,
-	int range
+void matrixMaster(
+	const T* inputMatrix1,   // Входная матрица 1
+	const T* inputMatrix2,   // Входная матрица 2
+	T* outputMatrix,         // Выходная матрица
+	uint64_t numRows,        // Число строк
+	uint64_t numCols1,       // Число столбцов первой матрицы
+	uint64_t numCols2,       // Число столбцов второй матрицы
+	ProcessingMode mode,     // Режим обработки
+	int numSlaves            // Число рабочих процессов (слейвов)
 )
 {
-	int base_tag = 1;
-	uint64_t mx, my, mz;
+	int baseTag = 1;
+	uint64_t rows, cols1, cols2;
 
-	T* mtx_1;
-	T* mtx_2;
-	T* mtx_3;
+	T* tempMatrix1;
+	T* tempMatrix2;
+	T* tempMatrix3;
 
-	mtx_wrap_beg(n_mtx_1, n_mtx_2, n_mtx_3, nx, ny, nz, mtx_1, mtx_2, mtx_3, mx, my, mz);
+	// Обертка для матриц: извлечение подматриц для обработки
+	wrapMatrixData(inputMatrix1, inputMatrix2, outputMatrix, numRows, numCols1, numCols2,
+		tempMatrix1, tempMatrix2, tempMatrix3, rows, cols1, cols2);
 
-	//           1 1 0 0
-	//           1 1 0 0
-	//           1 1 0 0
-	//           1 1 0 0
-	//                  
-	// 1 1 1 1   1 1 0 0
-	// 1 1 1 1   1 1 0 0
-	// 0 0 0 0   0 0 0 0
-	// 0 0 0 0   0 0 0 0
-	thread worker_1([=]()
+	// Обработка первой четверти матрицы
+	thread worker1([=]()
 		{
-			mtx_master_worker(mtx_1, mtx_2, mtx_3, mx, my, mz, 0, 0, __mode, base_tag + 8 * 0, (0 % (range - 1)) + 1);
+			matrixMasterWorker(tempMatrix1, tempMatrix2, tempMatrix3, rows, cols1, cols2, 0, 0, mode, baseTag + 8 * 0, (0 % (numSlaves - 1)) + 1);
 		});
 
-	//           0 0 1 1
-	//           0 0 1 1
-	//           0 0 1 1
-	//           0 0 1 1
-	//                  
-	// 1 1 1 1   0 0 1 1
-	// 1 1 1 1   0 0 1 1
-	// 0 0 0 0   0 0 0 0
-	// 0 0 0 0   0 0 0 0
-	thread worker_2([=]()
+	// Обработка второй четверти матрицы
+	thread worker2([=]()
 		{
-			mtx_master_worker(mtx_1, mtx_2, mtx_3, mx, my, mz, 0, mz / 2, __mode, base_tag + 8 * 1, (1 % (range - 1)) + 1);
+			matrixMasterWorker(tempMatrix1, tempMatrix2, tempMatrix3, rows, cols1, cols2, 0, cols2 / 2, mode, baseTag + 8 * 1, (1 % (numSlaves - 1)) + 1);
 		});
 
-	//           1 1 0 0
-	//           1 1 0 0
-	//           1 1 0 0
-	//           1 1 0 0
-	//                  
-	// 0 0 0 0   0 0 0 0
-	// 0 0 0 0   0 0 0 0
-	// 1 1 1 1   1 1 0 0
-	// 1 1 1 1   1 1 0 0
-	thread worker_3([=]()
+	// Обработка третьей четверти матрицы
+	thread worker3([=]()
 		{
-			mtx_master_worker(mtx_1, mtx_2, mtx_3, mx, my, mz, mx / 2, 0, __mode, base_tag + 8 * 2, (2 % (range - 1)) + 1);
+			matrixMasterWorker(tempMatrix1, tempMatrix2, tempMatrix3, rows, cols1, cols2, rows / 2, 0, mode, baseTag + 8 * 2, (2 % (numSlaves - 1)) + 1);
 		});
 
-	//           0 0 1 1
-	//           0 0 1 1
-	//           0 0 1 1
-	//           0 0 1 1
-	//                  
-	// 0 0 0 0   0 0 0 0
-	// 0 0 0 0   0 0 0 0
-	// 1 1 1 1   0 0 1 1
-	// 1 1 1 1   0 0 1 1
-	thread worker_4([=]()
+	// Обработка четвертой четверти матрицы
+	thread worker4([=]()
 		{
-			mtx_master_worker(mtx_1, mtx_2, mtx_3, mx, my, mz, mx / 2, mz / 2, __mode, base_tag + 8 * 3, (3 % (range - 1)) + 1);
+			matrixMasterWorker(tempMatrix1, tempMatrix2, tempMatrix3, rows, cols1, cols2, rows / 2, cols2 / 2, mode, baseTag + 8 * 3, (3 % (numSlaves - 1)) + 1);
 		});
 
-	worker_1.join();
-	worker_2.join();
-	worker_3.join();
-	worker_4.join();
+	// Ожидание завершения всех рабочих потоков
+	worker1.join();
+	worker2.join();
+	worker3.join();
+	worker4.join();
 
-	mtx_wrap_end(n_mtx_1, n_mtx_2, n_mtx_3, nx, ny, nz, mtx_1, mtx_2, mtx_3, mx, my, mz);
+	// Завершающая обертка для матриц: извлечение результатов обработки
+	wrapMatrixDataEnd(inputMatrix1, inputMatrix2, outputMatrix, numRows, numCols1, numCols2,
+		tempMatrix1, tempMatrix2, tempMatrix3, rows, cols1, cols2);
 }
 
+
 template <typename T>
-void mtx_slave_async_worker
-(
-	T* mtx_1,
-	T* mtx_2,
-	const T* mtx_3,
-	uint64_t mx,
-	uint64_t my,
-	uint64_t mz,
-	bool* chk_1,
-	bool* chk_2,
-	const bool* chk_3,
-	int base_tag
+void matrixSlaveAsyncWorker(
+	T* matrix1,              // Матрица 1 (полученная из сети)
+	T* matrix2,              // Матрица 2 (полученная из сети)
+	const T* matrix3,        // Матрица 3 (для отправки в сеть)
+	uint64_t rows,           // Количество строк для обработки
+	uint64_t cols1,          // Количество столбцов для первой матрицы
+	uint64_t cols2,          // Количество столбцов для второй матрицы
+	bool* checkMatrix1,      // Массив для проверки матрицы 1
+	bool* checkMatrix2,      // Массив для проверки матрицы 2
+	const bool* checkMatrix3,// Массив для проверки матрицы 3
+	int baseTag              // Базовый тег для MPI
 )
 {
-	thread receiver_1_thread([=]()
+	// Поток для получения данных для matrix1
+	thread receiver1Thread([=]()
 		{
-			mtx_chunk_receiver(mtx_1, mx, my, MPI_COMM_WORLD, 0, base_tag + 4, false, chk_1);
-		});
-	thread receiver_2_thread([=]()
-		{
-			mtx_chunk_receiver(mtx_2, my, mz, MPI_COMM_WORLD, 0, base_tag + 5, true, chk_2);
+			receiveMatrixChunks(matrix1, rows, cols1, MPI_COMM_WORLD, 0, baseTag + 4, false, checkMatrix1);
 		});
 
-	receiver_1_thread.join();
-	receiver_2_thread.join();
+	// Поток для получения данных для matrix2
+	thread receiver2Thread([=]()
+		{
+			receiveMatrixChunks(matrix2, cols1, cols2, MPI_COMM_WORLD, 0, baseTag + 5, true, checkMatrix2);
+		});
 
-	mtx_chunk_sender(mtx_3, mx, mz, MPI_COMM_WORLD, 0, base_tag + 6, false, chk_3);
+	// Ожидание завершения получения обеих частей данных
+	receiver1Thread.join();
+	receiver2Thread.join();
+
+	// Отправка обработанных данных (matrix3)
+	sendMatrixChunks(matrix3, rows, cols2, MPI_COMM_WORLD, 0, baseTag + 6, false, checkMatrix3);
 }
 
+
 template <typename T>
-void mtx_slave_worker()
+void matrixSlaveWorker()
 {
-	mode __mode;
-	int base_tag;
-	MPI_Status mpi_status;
+	ProcessingMode processingMode;
+	int baseTag;
+	MPI_Status mpiStatus;
 
-	MPI_Recv((void*)&base_tag, (int)sizeof(int), MPI_BYTE, 0, 0, MPI_COMM_WORLD, &mpi_status);
+	// Получение базового тега
+	MPI_Recv((void*)&baseTag, (int)sizeof(int), MPI_BYTE, 0, 0, MPI_COMM_WORLD, &mpiStatus);
 
-	if (base_tag == -1)
+	// Проверка на ошибку
+	if (baseTag == -1)
 		throw exception();
 
-	MPI_Recv((void*)&__mode, (int)sizeof(mode), MPI_BYTE, 0, base_tag + 0, MPI_COMM_WORLD, &mpi_status);
+	// Получение режима обработки
+	MPI_Recv((void*)&processingMode, (int)sizeof(ProcessingMode), MPI_BYTE, 0, baseTag + 0, MPI_COMM_WORLD, &mpiStatus);
 
-	switch (__mode)
+	switch (processingMode)
 	{
-	case mode::sync:
+	case ProcessingMode::Synchronous:
 	{
-		uint64_t x, y, z;
+		uint64_t rows, cols1, cols2;
 
-		MPI_Recv((void*)&x, (int)sizeof(uint64_t), MPI_BYTE, 0, base_tag + 1, MPI_COMM_WORLD, &mpi_status);
-		MPI_Recv((void*)&y, (int)sizeof(uint64_t), MPI_BYTE, 0, base_tag + 2, MPI_COMM_WORLD, &mpi_status);
-		MPI_Recv((void*)&z, (int)sizeof(uint64_t), MPI_BYTE, 0, base_tag + 3, MPI_COMM_WORLD, &mpi_status);
+		// Получение размеров матриц
+		MPI_Recv((void*)&rows, (int)sizeof(uint64_t), MPI_BYTE, 0, baseTag + 1, MPI_COMM_WORLD, &mpiStatus);
+		MPI_Recv((void*)&cols1, (int)sizeof(uint64_t), MPI_BYTE, 0, baseTag + 2, MPI_COMM_WORLD, &mpiStatus);
+		MPI_Recv((void*)&cols2, (int)sizeof(uint64_t), MPI_BYTE, 0, baseTag + 3, MPI_COMM_WORLD, &mpiStatus);
 
-		T* __mtx_1 = new T[x * y];
-		T* __mtx_2 = new T[y * z];
-		T* __mtx_3 = new T[x * z];
+		T* matrix1 = new T[rows * cols1];
+		T* matrix2 = new T[cols1 * cols2];
+		T* resultMatrix = new T[rows * cols2];
 
-		MPI_Recv((void*)__mtx_1, (int)(x * y * sizeof(T)), MPI_BYTE, 0, base_tag + 4, MPI_COMM_WORLD, &mpi_status);
-		MPI_Recv((void*)__mtx_2, (int)(y * z * sizeof(T)), MPI_BYTE, 0, base_tag + 5, MPI_COMM_WORLD, &mpi_status);
+		// Получение данных для матриц
+		MPI_Recv((void*)matrix1, (int)(rows * cols1 * sizeof(T)), MPI_BYTE, 0, baseTag + 4, MPI_COMM_WORLD, &mpiStatus);
+		MPI_Recv((void*)matrix2, (int)(cols1 * cols2 * sizeof(T)), MPI_BYTE, 0, baseTag + 5, MPI_COMM_WORLD, &mpiStatus);
 
-		mtx_multiply(__mtx_1, __mtx_2, __mtx_3, x, y, z);
+		// Умножение матриц
+		multiplyMatricesWithChunks(matrix1, matrix2, resultMatrix, rows, cols1, cols2);
 
-		MPI_Send((void*)__mtx_3, (int)(x * z * sizeof(T)), MPI_BYTE, 0, base_tag + 6, MPI_COMM_WORLD);
+		// Отправка результата
+		MPI_Send((void*)resultMatrix, (int)(rows * cols2 * sizeof(T)), MPI_BYTE, 0, baseTag + 6, MPI_COMM_WORLD);
 
-		delete[] __mtx_1;
-		delete[] __mtx_2;
-		delete[] __mtx_3;
+		delete[] matrix1;
+		delete[] matrix2;
+		delete[] resultMatrix;
 
 		break;
 	}
 
-	case mode::async:
+	case ProcessingMode::Asynchronous:
 	{
-		uint64_t x, y, z;
+		uint64_t rows, cols1, cols2;
 
-		MPI_Recv((void*)&x, (int)sizeof(uint64_t), MPI_BYTE, 0, base_tag + 1, MPI_COMM_WORLD, &mpi_status);
-		MPI_Recv((void*)&y, (int)sizeof(uint64_t), MPI_BYTE, 0, base_tag + 2, MPI_COMM_WORLD, &mpi_status);
-		MPI_Recv((void*)&z, (int)sizeof(uint64_t), MPI_BYTE, 0, base_tag + 3, MPI_COMM_WORLD, &mpi_status);
+		// Получение размеров матриц
+		MPI_Recv((void*)&rows, (int)sizeof(uint64_t), MPI_BYTE, 0, baseTag + 1, MPI_COMM_WORLD, &mpiStatus);
+		MPI_Recv((void*)&cols1, (int)sizeof(uint64_t), MPI_BYTE, 0, baseTag + 2, MPI_COMM_WORLD, &mpiStatus);
+		MPI_Recv((void*)&cols2, (int)sizeof(uint64_t), MPI_BYTE, 0, baseTag + 3, MPI_COMM_WORLD, &mpiStatus);
 
-		uint64_t cx = x / chunk_size, cy = y / chunk_size, cz = z / chunk_size;
+		uint64_t chunkRows = rows / chunk_size, chunkCols1 = cols1 / chunk_size, chunkCols2 = cols2 / chunk_size;
 
-		T* __mtx_1 = new T[x * y];
-		T* __mtx_2 = new T[y * z];
-		T* __mtx_3 = new T[x * z];
+		T* matrix1 = new T[rows * cols1];
+		T* matrix2 = new T[cols1 * cols2];
+		T* resultMatrix = new T[rows * cols2];
 
-		bool* __chk_1 = new bool[cx * cy]();
-		bool* __chk_2 = new bool[cy * cz]();
-		bool* __chk_3 = new bool[cx * cz]();
+		bool* checkMatrix1 = new bool[chunkRows * chunkCols1]();
+		bool* checkMatrix2 = new bool[chunkCols1 * chunkCols2]();
+		bool* checkMatrix3 = new bool[chunkRows * chunkCols2]();
 
-		thread slave_async_worker_thread([=]()
+		// Асинхронная обработка данных в отдельном потоке
+		thread slaveAsyncWorkerThread([=]()
 			{
-				mtx_slave_async_worker(__mtx_1, __mtx_2, __mtx_3, x, y, z, __chk_1, __chk_2, __chk_3, base_tag);
+				matrixSlaveAsyncWorker(matrix1, matrix2, resultMatrix, rows, cols1, cols2, checkMatrix1, checkMatrix2, checkMatrix3, baseTag);
 			});
 
-		mtx_multiply(__mtx_1, __mtx_2, __mtx_3, x, y, z, __chk_1, __chk_2, __chk_3);
+		// Умножение матриц
+		multiplyMatricesWithChunks(matrix1, matrix2, resultMatrix, rows, cols1, cols2, checkMatrix1, checkMatrix2, checkMatrix3);
 
-		slave_async_worker_thread.join();
+		// Ожидание завершения асинхронной работы
+		slaveAsyncWorkerThread.join();
 
-		delete[] __mtx_1;
-		delete[] __mtx_2;
-		delete[] __mtx_3;
+		delete[] matrix1;
+		delete[] matrix2;
+		delete[] resultMatrix;
 
-		delete[] __chk_1;
-		delete[] __chk_2;
-		delete[] __chk_3;
+		delete[] checkMatrix1;
+		delete[] checkMatrix2;
+		delete[] checkMatrix3;
 
 		break;
 	}
 
 	default:
-		cout << "Shit happens\n";
+		cout << "Unexpected error occurred\n";
 	}
 }
 
+
 template <typename T>
-void mtx_slave()
+void matrixSlave()
 {
 	while (true)
 	{
 		try
 		{
-			mtx_slave_worker<T>();
+			matrixSlaveWorker<T>();
 		}
 		catch (...)
 		{
@@ -622,124 +668,124 @@ int main(int argc, char* argv[], char* argp[])
 	if ((provided & MPI_THREAD_MULTIPLE) != MPI_THREAD_MULTIPLE)
 		exit(-1);
 
-	int world_rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	int process_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &process_rank);
 
-	int world_size;
-	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+	int total_processes;
+	MPI_Comm_size(MPI_COMM_WORLD, &total_processes);
 
-	if (world_rank == 0)
+	if (process_rank == 0)
 	{
-		mode __mode;
-		uint64_t x, y, z;
-		string file_path;
+		ProcessingMode processing_mode;
+		uint64_t rows_A, cols_A, cols_B;
+		string output_file_path;
 
-		bool fill = false;
-		double mtx_1_filler;
-		double mtx_2_filler;
+		bool use_fill_values = false;
+		double filler_value_A;
+		double filler_value_B;
 
 		try
 		{
 			if (argc < 5)
 				throw exception();
 
-			x = stoull(argv[1]);
-			y = stoull(argv[2]);
-			z = stoull(argv[3]);
+			rows_A = stoull(argv[1]);
+			cols_A = stoull(argv[2]);
+			cols_B = stoull(argv[3]);
 
 			if (argc >= 7)
 			{
 				try
 				{
-					mtx_1_filler = stod(argv[4]);
-					mtx_2_filler = stod(argv[5]);
+					filler_value_A = stod(argv[4]);
+					filler_value_B = stod(argv[5]);
 
-					fill = true;
+					use_fill_values = true;
 				}
 				catch (...) {}
 			}
 
-			string mode_str(argv[fill ? 6 : 4]);
+			string mode_str(argv[use_fill_values ? 6 : 4]);
 
 			if (mode_str == "sync")
-				__mode = mode::sync;
+				processing_mode = ProcessingMode::Synchronous;
 			else if (mode_str == "async")
-				__mode = mode::async;
+				processing_mode = ProcessingMode::Asynchronous;
 			else
 				throw exception();
 
-			if (argc >= (fill ? 8 : 6))
-				file_path = argv[fill ? 7 : 5];
+			if (argc >= (use_fill_values ? 8 : 6))
+				output_file_path = argv[use_fill_values ? 7 : 5];
 		}
 		catch (...)
 		{
-			cout << "Usage: <uint64 x> <uint64 y> <uint64 z> [<flt64 mtx_1_filler> <flt64 mtx_2_filler>] <mode> [<file_path>]"
-				<< "\nAvailable modes: sync, async. If fillers are specified then whole source matrices would contain same elements,"
-				<< "\notherwise UNIFORM_DISTRIBUTION[-1.0; +1.0]. All file paths including executable file path must be the same"
-				<< "\non all machines and must be absolute. All files must have OPENMPIACC permissions for requested actions (R/W/X)."
-				<< "\nIf file path is specified then master would (over)write result matrix and check matrix into it.";
+			cout << "Usage: <uint64 rows_A> <uint64 cols_A> <uint64 cols_B> [<flt64 filler_A> <flt64 filler_B>] <mode> [<output_file_path>]\n"
+				<< "\nAvailable modes: sync, async. If fillers are specified then the entire matrices will have the same elements,"
+				<< "\notherwise UNIFORM_DISTRIBUTION[-1.0; +1.0]. All file paths, including the executable path, must be the same"
+				<< "\non all machines and must be absolute. All files must have OPENMPIACC permissions for the requested actions (R/W/X)."
+				<< "\nIf file path is specified, the master will (over)write the result matrix and the check matrix to it.";
 
-			exit(666);
+			exit(-1);
 		}
 
-		mtx_data* mtx_1 = new mtx_data[x * y];
-		mtx_data* mtx_2 = new mtx_data[y * z];
-		mtx_data* mtx_3 = new mtx_data[x * z];
-		mtx_data* mtx_check = new mtx_data[x * z];
+		MatrixData* matrix_A = new MatrixData[rows_A * cols_A];
+		MatrixData* matrix_B = new MatrixData[cols_A * cols_B];
+		MatrixData* result_matrix = new MatrixData[rows_A * cols_B];
+		MatrixData* check_matrix = new MatrixData[rows_A * cols_B];
 
-		if (fill)
+		if (use_fill_values)
 		{
-			for (uint64_t i = 0; i < x * y; ++i)
-				mtx_1[i] = (mtx_data)mtx_1_filler;
+			for (uint64_t i = 0; i < rows_A * cols_A; ++i)
+				matrix_A[i] = (MatrixData)filler_value_A;
 
-			for (uint64_t i = 0; i < y * z; ++i)
-				mtx_2[i] = (mtx_data)mtx_2_filler;
+			for (uint64_t i = 0; i < cols_A * cols_B; ++i)
+				matrix_B[i] = (MatrixData)filler_value_B;
 		}
 		else
 		{
-			mt19937 gen((random_device())());
-			uniform_real_distribution<mtx_data> dis(-1.0, 1.0);
+			mt19937 generator((random_device())());
+			uniform_real_distribution<MatrixData> distribution(-1.0, 1.0);
 
-			for (uint64_t i = 0; i < x * y; ++i)
-				mtx_1[i] = (mtx_data)dis(gen);
+			for (uint64_t i = 0; i < rows_A * cols_A; ++i)
+				matrix_A[i] = (MatrixData)distribution(generator);
 
-			for (uint64_t i = 0; i < y * z; ++i)
-				mtx_2[i] = (mtx_data)dis(gen);
+			for (uint64_t i = 0; i < cols_A * cols_B; ++i)
+				matrix_B[i] = (MatrixData)distribution(generator);
 		}
 
-		bool check_done = false;
-		thread check_worker([mtx_1, mtx_2, mtx_check, x, y, z, &check_done]()
+		bool check_completed = false;
+		thread check_thread([matrix_A, matrix_B, check_matrix, rows_A, cols_A, cols_B, &check_completed]()
 			{
 				auto start = chrono::high_resolution_clock::now();
-				mtx_multiply_2(mtx_1, mtx_2, mtx_check, x, y, z);
+				multiplyMatrices(matrix_A, matrix_B, check_matrix, rows_A, cols_A, cols_B);
 				auto end = chrono::high_resolution_clock::now();
 
 				cout << "MASTER TIME: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " milliseconds\n";
-				check_done = true;
+				check_completed = true;
 			});
 
 		auto start = chrono::high_resolution_clock::now();
-		mtx_master(mtx_1, mtx_2, mtx_3, x, y, z, __mode, world_size);
+		matrixMaster(matrix_A, matrix_B, result_matrix, rows_A, cols_A, cols_B, processing_mode, total_processes);
 		auto end = chrono::high_resolution_clock::now();
 
 		cout << "SLAVES TIME: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " milliseconds\n";
 
-		if (!check_done)
-			cout << "Waiting master to finish checking...\n";
+		if (!check_completed)
+			cout << "Waiting for the master to finish checking...\n";
 
-		check_worker.join();
+		check_thread.join();
 
 		uint64_t mismatch_count = 0;
 
-		for (uint64_t i = 0; i < x * z; ++i)
-			if (!almost_equal(mtx_3[i], mtx_check[i]))
+		for (uint64_t i = 0; i < rows_A * cols_B; ++i)
+			if (!almost_equal(result_matrix[i], check_matrix[i]))
 				++mismatch_count;
 
 		cout << "End of check. Mismatch count: " << mismatch_count << "\n";
 
-		if (file_path != "")
+		if (output_file_path != "")
 		{
-			ofstream output(file_path);
+			ofstream output(output_file_path);
 
 			if (output.is_open())
 			{
@@ -749,12 +795,12 @@ int main(int argc, char* argv[], char* argp[])
 					<< setw(10) << "SLAVES" << "\t"
 					<< setw(10) << "MASTER" << "\n";
 
-				for (uint64_t i = 0; i < x * z; ++i)
+				for (uint64_t i = 0; i < rows_A * cols_B; ++i)
 					output
-					<< setw(10) << i / z << "\t"
-					<< setw(10) << i % z << "\t"
-					<< setw(10) << mtx_3[i] << "\t"
-					<< setw(10) << mtx_check[i] << "\n";
+					<< setw(10) << i / cols_B << "\t"
+					<< setw(10) << i % cols_B << "\t"
+					<< setw(10) << result_matrix[i] << "\t"
+					<< setw(10) << check_matrix[i] << "\n";
 
 				output.close();
 			}
@@ -762,16 +808,16 @@ int main(int argc, char* argv[], char* argp[])
 				cout << "Wrong file path\n";
 		}
 
-		for (int i = 1, false_tag = -1; i < world_size; ++i)
+		for (int i = 1, false_tag = -1; i < total_processes; ++i)
 			MPI_Send((void*)&false_tag, (int)sizeof(int), MPI_BYTE, i, 0, MPI_COMM_WORLD);
 
-		delete[] mtx_1;
-		delete[] mtx_2;
-		delete[] mtx_3;
-		delete[] mtx_check;
+		delete[] matrix_A;
+		delete[] matrix_B;
+		delete[] result_matrix;
+		delete[] check_matrix;
 	}
 	else
-		mtx_slave<mtx_data>();
+		matrixSlave<MatrixData>();
 
 	MPI_Finalize();
 }
